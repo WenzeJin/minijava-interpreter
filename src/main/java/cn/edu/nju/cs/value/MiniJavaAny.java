@@ -1,6 +1,5 @@
 package cn.edu.nju.cs.value;
 
-import javax.print.attribute.standard.NumberOfInterveningJobs;
 
 public class MiniJavaAny implements Cloneable {
 
@@ -132,8 +131,7 @@ public class MiniJavaAny implements Cloneable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof MiniJavaAny) {
-            MiniJavaAny other = (MiniJavaAny) obj;
+        if (obj instanceof MiniJavaAny other) {
             if (this == other) {
                 return true;
             }
