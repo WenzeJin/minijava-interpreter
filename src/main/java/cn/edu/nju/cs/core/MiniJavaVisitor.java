@@ -1,9 +1,11 @@
-package cn.edu.nju.cs.parser;
+package cn.edu.nju.cs.core;
 
 import cn.edu.nju.cs.env.RuntimeEnv;
+import cn.edu.nju.cs.parser.MiniJavaParser;
+import cn.edu.nju.cs.parser.MiniJavaParserBaseVisitor;
 import cn.edu.nju.cs.value.*;
 
-public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny>{
+public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     final RuntimeEnv env;
 
     public MiniJavaVisitor() {
@@ -184,7 +186,6 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny>{
             MiniJavaAny lv = visit(ctx.expression(0));
             MiniJavaAny rv = visit(ctx.expression(1));
 
-
             switch (ctx.bop.getText()) {
                 case "=":
                     lv.assign(rv);
@@ -314,7 +315,7 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny>{
         if (ctx.DECIMAL_LITERAL() != null) {
             return new MiniJavaAny(MiniJavaAny.Type.INT, Integer.parseInt(ctx.getText()));
         } else if (ctx.CHAR_LITERAL() != null) {
-            return new MiniJavaAny(MiniJavaAny.Type.CHAR, ctx.getText().charAt(1));
+            return new MiniJavaAny(MiniJavaAny.Type.CHAR, (byte)ctx.getText().charAt(1));
         } else if (ctx.STRING_LITERAL() != null) {
             var lit = ctx.getText();
             return new MiniJavaAny(MiniJavaAny.Type.STRING, lit.substring(1, lit.length() - 1));
@@ -340,7 +341,7 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny>{
                 yield new MiniJavaAny(MiniJavaAny.Type.INT, value);
             }
             case "char" -> {
-                char c = 0;
+                byte c = 0;
                 yield new MiniJavaAny(MiniJavaAny.Type.CHAR, c);
             }
             case "boolean" -> {

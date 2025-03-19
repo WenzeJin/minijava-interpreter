@@ -30,17 +30,17 @@ public class MiniJavaAny implements Cloneable {
         if (type == Type.INT) {
             return (int) value;
         } else if (type == Type.CHAR) {
-            return (char) value;
+            return (byte) value;
         } else {
             throw new RuntimeException("Cannot convert " + value + " to int.");
         }
     }
 
-    public char getChar() {
+    public byte getChar() {
         if (type == Type.INT) {
-            return (char) ((int) value & 0xFF);
+            return (byte) (int) value;
         } else if (type == Type.CHAR) {
-            return (char) value;
+            return (byte) value;
         } else {
             throw new RuntimeException("Cannot convert " + value + " to char.");
         }
@@ -57,8 +57,10 @@ public class MiniJavaAny implements Cloneable {
     public String getString() {
         if (type == Type.STRING) {
             return (String) value;
+        } else if (type == Type.CHAR) {
+            return String.valueOf((char) (byte) value);
         } else {
-            throw new RuntimeException("Cannot convert " + value + " to string.");
+            return String.valueOf(value);
         }
     }
 
@@ -73,7 +75,7 @@ public class MiniJavaAny implements Cloneable {
         if (type == Type.INT) {
             this.value = value;
         } else if (type == Type.CHAR) {
-            this.value = (char) (value & 0xFF);
+            this.value = (byte) value;
         }
     }
 
@@ -92,7 +94,7 @@ public class MiniJavaAny implements Cloneable {
         if (type == Type.INT) {
             value = (int) value + 1;
         } else if (type == Type.CHAR) {
-            value = (char)(((char) value + 1) & 0xFF);
+            value = (byte)((byte) value + 1);
         } else {
             throw new RuntimeException("Cannot increment " + type);
         }
@@ -102,7 +104,7 @@ public class MiniJavaAny implements Cloneable {
         if (type == Type.INT) {
             value = (int) value - 1;
         } else if (type == Type.CHAR) {
-            value = (char)(((char) value - 1) & 0xFF);
+            value = (byte)((byte) value - 1);
         } else {
             throw new RuntimeException("Cannot decrement " + type);
         }
@@ -119,8 +121,8 @@ public class MiniJavaAny implements Cloneable {
     @Override
     public String toString() {
         String typeStr = type.toString().toLowerCase();
+        Object value = type == Type.CHAR ? (char)(byte) this.value : this.value;
         return "(" + typeStr + ") " + value;
-
     }
 
     @Override

@@ -5,7 +5,7 @@ public class CalcUtils {
 
     public static MiniJavaAny add(MiniJavaAny a, MiniJavaAny b) {
         if (a.getType() == MiniJavaAny.Type.STRING || b.getType() == MiniJavaAny.Type.STRING) {
-            return new MiniJavaAny(MiniJavaAny.Type.STRING, a.getValue().toString() + b.getValue().toString());
+            return new MiniJavaAny(MiniJavaAny.Type.STRING, a.getString() + b.getString());
         } else  {
             return new MiniJavaAny(MiniJavaAny.Type.INT, a.getInt() + b.getInt());
         }
@@ -78,11 +78,23 @@ public class CalcUtils {
     }
 
     public static MiniJavaAny eq (MiniJavaAny a, MiniJavaAny b) {
-        return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getValue().equals(b.getValue()));
+        if (a.type == MiniJavaAny.Type.STRING && b.type == MiniJavaAny.Type.STRING) {
+            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getString().equals(b.getString()));
+        } if (a.type == MiniJavaAny.Type.BOOLEAN && b.type == MiniJavaAny.Type.BOOLEAN) {
+            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getBoolean() == b.getBoolean());
+        } else {
+            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getInt() == b.getInt());
+        }
     }
 
     public static MiniJavaAny neq (MiniJavaAny a, MiniJavaAny b) {
-        return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, !a.getValue().equals(b.getValue()));
+        if (a.type == MiniJavaAny.Type.STRING && b.type == MiniJavaAny.Type.STRING) {
+            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, !a.getString().equals(b.getString()));
+        } if (a.type == MiniJavaAny.Type.BOOLEAN && b.type == MiniJavaAny.Type.BOOLEAN) {
+            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getBoolean() != b.getBoolean());
+        } else {
+            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getInt() != b.getInt());
+        }
     }
 
     public static MiniJavaAny bitAnd (MiniJavaAny a, MiniJavaAny b) {
@@ -101,18 +113,6 @@ public class CalcUtils {
         TypeUtils.isTypes(a, MiniJavaAny.Type.INT, MiniJavaAny.Type.CHAR);
         TypeUtils.isTypes(b, MiniJavaAny.Type.INT, MiniJavaAny.Type.CHAR);
         return new MiniJavaAny(MiniJavaAny.Type.INT, a.getInt() | b.getInt());
-    }
-
-    public static MiniJavaAny and (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isType(a, MiniJavaAny.Type.BOOLEAN);
-        TypeUtils.isType(b, MiniJavaAny.Type.BOOLEAN);
-        return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getBoolean() && b.getBoolean());
-    }
-
-    public static MiniJavaAny or (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isType(a, MiniJavaAny.Type.BOOLEAN);
-        TypeUtils.isType(b, MiniJavaAny.Type.BOOLEAN);
-        return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, a.getBoolean() || b.getBoolean());
     }
 
 

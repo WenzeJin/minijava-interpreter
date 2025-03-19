@@ -2,7 +2,7 @@ package cn.edu.nju.cs;
 
 import cn.edu.nju.cs.parser.MiniJavaLexer;
 import cn.edu.nju.cs.parser.MiniJavaParser;
-import cn.edu.nju.cs.parser.MiniJavaVisitor;
+import cn.edu.nju.cs.core.MiniJavaVisitor;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
