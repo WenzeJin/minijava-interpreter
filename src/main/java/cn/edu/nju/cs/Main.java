@@ -17,10 +17,6 @@ public class Main {
         MiniJavaParser parser = new MiniJavaParser(tokenStream);
         ParseTree pt = parser.compilationUnit();
 
-        // TODO
-        // Implement Your Own Visitor by extending MiniJavaParserBaseVisitor, then replace the following 'MiniJavaParserBaseVisitor<>'
-        // For example: new YourVisitor().visit(pt);
-        // Docs: https://box.nju.edu.cn/f/d4346b65c98743fe8208/
         new MiniJavaVisitor().visit(pt);
     }
 
@@ -31,8 +27,6 @@ public class Main {
             System.err.println("Error: Only one argument is allowed: the path of MiniJava file.");
             throw new RuntimeException();
         }
-
-
 
         File mjFile = new File(args[0]);
         run(mjFile);

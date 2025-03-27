@@ -4,6 +4,7 @@ import cn.edu.nju.cs.env.RuntimeEnv;
 import cn.edu.nju.cs.parser.MiniJavaParser;
 import cn.edu.nju.cs.parser.MiniJavaParserBaseVisitor;
 import cn.edu.nju.cs.value.*;
+import cn.edu.nju.cs.value.MiniJavaAny.BasicType;
 
 public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     final RuntimeEnv env;
@@ -44,17 +45,17 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             // PrimitiveType Identifier '=' Expression
             value = visit(ctx.expression());
             if (ctx.primitiveType().getText().equals("int")) {
-                TypeUtils.isTypes(value, MiniJavaAny.Type.INT, MiniJavaAny.Type.CHAR);
-                value = new MiniJavaAny(MiniJavaAny.Type.INT, value.getInt());
+                TypeUtils.isTypes(value, BasicType.INT, BasicType.CHAR);
+                value = new MiniJavaAny(BasicType.INT, value.getInt());
             } else if (ctx.primitiveType().getText().equals("char")) {
-                TypeUtils.isTypes(value, MiniJavaAny.Type.CHAR, MiniJavaAny.Type.INT);
-                value = new MiniJavaAny(MiniJavaAny.Type.CHAR, value.getChar());
+                TypeUtils.isTypes(value, BasicType.CHAR, BasicType.INT);
+                value = new MiniJavaAny(BasicType.CHAR, value.getChar());
             } else if (ctx.primitiveType().getText().equals("boolean")) {
-                TypeUtils.isType(value, MiniJavaAny.Type.BOOLEAN);
-                value = new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, value.getBoolean());
+                TypeUtils.isType(value, BasicType.BOOLEAN);
+                value = new MiniJavaAny(BasicType.BOOLEAN, value.getBoolean());
             } else if (ctx.primitiveType().getText().equals("string")) {
-                TypeUtils.isType(value, MiniJavaAny.Type.STRING);
-                value = new MiniJavaAny(MiniJavaAny.Type.STRING, value.getString());
+                TypeUtils.isType(value, BasicType.STRING);
+                value = new MiniJavaAny(BasicType.STRING, value.getString());
             }
 
             id = ctx.identifier().getText();
@@ -99,7 +100,7 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             if (!value.isVariable()) {
                 throw new RuntimeException("Postfix operation must be applied to a variable.");
             }
-            TypeUtils.isType(value, MiniJavaAny.Type.INT);
+            TypeUtils.isType(value, BasicType.INT);
             MiniJavaAny oldValue = value.clone();
             if (ctx.postfix.getText().equals("++")) {
                 value.increment();
@@ -113,30 +114,30 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             MiniJavaAny value = visit(ctx.expression(0));
             switch (ctx.prefix.getText()) {
                 case "+":
-                    TypeUtils.isTypes(value, MiniJavaAny.Type.INT, MiniJavaAny.Type.CHAR);
+                    TypeUtils.isTypes(value, BasicType.INT, BasicType.CHAR);
                     return value;
                 case "-":
-                    if (value.getType() == MiniJavaAny.Type.INT || value.getType() == MiniJavaAny.Type.CHAR)
-                        return new MiniJavaAny(MiniJavaAny.Type.INT, -value.getInt());
+                    if (value.isBasicType(BasicType.INT) || value.isBasicType(BasicType.CHAR))
+                        return new MiniJavaAny(BasicType.INT, -value.getInt());
                     else
                         throw new RuntimeException("Prefix '-' operation must be applied to int or char.");
                 case "~":
-                    if (value.getType() == MiniJavaAny.Type.INT || value.getType() == MiniJavaAny.Type.CHAR)
-                        return new MiniJavaAny(MiniJavaAny.Type.INT, ~value.getInt());
+                    if (value.isBasicType(BasicType.INT) || value.isBasicType(BasicType.CHAR))
+                        return new MiniJavaAny(BasicType.INT, ~value.getInt());
                     else
                         throw new RuntimeException("Prefix '~' operation must be applied to int or char.");
                 case "not":
-                    TypeUtils.isType(value, MiniJavaAny.Type.BOOLEAN);
-                    return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, !value.getBoolean());
+                    TypeUtils.isType(value, BasicType.BOOLEAN);
+                    return new MiniJavaAny(BasicType.BOOLEAN, !value.getBoolean());
                 case "++":
-                    if (value.getType() == MiniJavaAny.Type.INT || value.getType() == MiniJavaAny.Type.CHAR) {
+                    if (value.isBasicType(BasicType.INT) || value.isBasicType(BasicType.CHAR)) {
                         value.increment();
                     } else {
                         throw new RuntimeException("Prefix '++' operation must be applied to int or char.");
                     }
                     return value;
                 case "--":
-                    if (value.getType() == MiniJavaAny.Type.INT || value.getType() == MiniJavaAny.Type.CHAR) {
+                    if (value.isBasicType(BasicType.INT) || value.isBasicType(BasicType.CHAR)) {
                         value.decrement();
                     } else {
                         throw new RuntimeException("Prefix '--' operation must be applied to int or char.");
@@ -154,26 +155,26 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             if (ctx.bop.getText().equals("and") || ctx.bop.getText().equals("or")) {
                 // short circuit
                 MiniJavaAny lv = visit(ctx.expression(0));
-                TypeUtils.isType(lv, MiniJavaAny.Type.BOOLEAN);
+                TypeUtils.isType(lv, BasicType.BOOLEAN);
                 if (ctx.bop.getText().equals("and")) {
                     if (!lv.getBoolean()) {
-                        return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, false);
+                        return new MiniJavaAny(BasicType.BOOLEAN, false);
                     }
                 } else {
                     if (lv.getBoolean()) {
-                        return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, true);
+                        return new MiniJavaAny(BasicType.BOOLEAN, true);
                     }
                 }
                 MiniJavaAny rv = visit(ctx.expression(1));
-                TypeUtils.isType(rv, MiniJavaAny.Type.BOOLEAN);
-                return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, rv.getValue());
+                TypeUtils.isType(rv, BasicType.BOOLEAN);
+                return new MiniJavaAny(BasicType.BOOLEAN, rv.getValue());
 
             }
 
             if (ctx.bop.getText().equals("?")) {
                 // conditional expression
                 MiniJavaAny cv = visit(ctx.expression(0));
-                TypeUtils.isType(cv, MiniJavaAny.Type.BOOLEAN);
+                TypeUtils.isType(cv, BasicType.BOOLEAN);
                 if ((boolean) cv.getValue()) {
                     return visit(ctx.expression(1));
                 } else {
@@ -313,14 +314,14 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     @Override
     public MiniJavaAny visitLiteral(MiniJavaParser.LiteralContext ctx) {
         if (ctx.DECIMAL_LITERAL() != null) {
-            return new MiniJavaAny(MiniJavaAny.Type.INT, Integer.parseInt(ctx.getText()));
+            return new MiniJavaAny(BasicType.INT, Integer.parseInt(ctx.getText()));
         } else if (ctx.CHAR_LITERAL() != null) {
-            return new MiniJavaAny(MiniJavaAny.Type.CHAR, (byte)ctx.getText().charAt(1));
+            return new MiniJavaAny(BasicType.CHAR, (byte)ctx.getText().charAt(1));
         } else if (ctx.STRING_LITERAL() != null) {
             var lit = ctx.getText();
-            return new MiniJavaAny(MiniJavaAny.Type.STRING, lit.substring(1, lit.length() - 1));
+            return new MiniJavaAny(BasicType.STRING, lit.substring(1, lit.length() - 1));
         } else if (ctx.BOOL_LITERAL() != null) {
-            return new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, Boolean.parseBoolean(ctx.getText()));
+            return new MiniJavaAny(BasicType.BOOLEAN, Boolean.parseBoolean(ctx.getText()));
         }
 
         return null;
@@ -338,19 +339,19 @@ public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         return switch (typeStr) {
             case "int" -> {
                 int value = 0;
-                yield new MiniJavaAny(MiniJavaAny.Type.INT, value);
+                yield new MiniJavaAny(BasicType.INT, value);
             }
             case "char" -> {
                 byte c = 0;
-                yield new MiniJavaAny(MiniJavaAny.Type.CHAR, c);
+                yield new MiniJavaAny(BasicType.CHAR, c);
             }
             case "boolean" -> {
                 boolean b = false;
-                yield new MiniJavaAny(MiniJavaAny.Type.BOOLEAN, b);
+                yield new MiniJavaAny(BasicType.BOOLEAN, b);
             }
             case "string" -> {
                 String s = "";
-                yield new MiniJavaAny(MiniJavaAny.Type.STRING, s);
+                yield new MiniJavaAny(BasicType.STRING, s);
             }
             default -> null;
         };

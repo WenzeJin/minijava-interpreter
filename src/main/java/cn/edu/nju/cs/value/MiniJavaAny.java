@@ -3,21 +3,27 @@ package cn.edu.nju.cs.value;
 
 public class MiniJavaAny implements Cloneable {
 
-    public enum Type {
+    public enum BasicType {
         INT, CHAR, BOOLEAN, STRING
     }
 
-    Type type;
+    String type;
     Object value;
     boolean isVariable;
 
-    public MiniJavaAny(Type type, Object value) {
+    public MiniJavaAny(String type, Object value) {
         this.type = type;
         this.value = value;
         this.isVariable = false;
     }
 
-    public Type getType() {
+    public MiniJavaAny(BasicType type, Object value) {
+        this.type = type.toString().toLowerCase();
+        this.value = value;
+        this.isVariable = false;
+    }
+
+    public String getType() {
         return type;
     }
 
@@ -25,10 +31,12 @@ public class MiniJavaAny implements Cloneable {
         return value;
     }
 
+    /* Get values of basic types */
+
     public int getInt() {
-        if (type == Type.INT) {
+        if (type.equals("int")) {
             return (int) value;
-        } else if (type == Type.CHAR) {
+        } else if (type.equals("char")) {
             return (byte) value;
         } else {
             throw new RuntimeException("Cannot convert " + value + " to int.");
@@ -36,9 +44,9 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public byte getChar() {
-        if (type == Type.INT) {
+        if (type.equals("int")) {
             return (byte) (int) value;
-        } else if (type == Type.CHAR) {
+        } else if (type.equals("char")) {
             return (byte) value;
         } else {
             throw new RuntimeException("Cannot convert " + value + " to char.");
@@ -46,7 +54,7 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public boolean getBoolean() {
-        if (type == Type.BOOLEAN) {
+        if (type.equals("boolean")) {
             return (boolean) value;
         } else {
             throw new RuntimeException("Cannot convert " + value + " to boolean.");
@@ -54,14 +62,22 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public String getString() {
-        if (type == Type.STRING) {
+        if (type.equals("string")) {
             return (String) value;
-        } else if (type == Type.CHAR) {
+        } else if (type.equals("char")) {
             return String.valueOf((char) (byte) value);
         } else {
             return String.valueOf(value);
         }
     }
+
+    /* Check basic type */
+
+    public boolean isBasicType(BasicType type) {
+        return this.type.equals(type.toString().toLowerCase());
+    }
+
+    /* Set values */
 
     public void setValue(Object value) {
         if (value.getClass() != this.value.getClass()) {
@@ -71,28 +87,30 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public void setIntVal(int value) {
-        if (type == Type.INT) {
+        if (type.equals("int")) {
             this.value = value;
-        } else if (type == Type.CHAR) {
+        } else if (type.equals("char")) {
             this.value = (byte) value;
         }
     }
 
     public void assign(MiniJavaAny other) {
-        if (other.type == Type.STRING && this.type == Type.STRING) {
+        if (other.type.equals("string") && other.type.equals("string")) {
             value = other.value;
-        } else if (other.type == Type.BOOLEAN && this.type == Type.BOOLEAN) {
+        } else if (other.type.equals("boolean") && this.type.equals("boolean")) {
             value = other.value;
-        } else if ((other.type == Type.INT || other.type == Type.CHAR)
-        && (type == Type.INT || type == Type.CHAR)) {
+        } else if ((other.type.equals("int") || other.type.equals("char"))
+                && (type.equals("int")|| type.equals("char"))) {
             setIntVal(other.getInt());
+        } else {
+            setValue(other.getValue());
         }
     }
 
     public void increment() {
-        if (type == Type.INT) {
+        if (type.equals("int")) {
             value = (int) value + 1;
-        } else if (type == Type.CHAR) {
+        } else if (type.equals("char")) {
             value = (byte)((byte) value + 1);
         } else {
             throw new RuntimeException("Cannot increment " + type);
@@ -100,14 +118,20 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public void decrement() {
-        if (type == Type.INT) {
+        if (type.equals("int")) {
             value = (int) value - 1;
-        } else if (type == Type.CHAR) {
-            value = (byte)((byte) value - 1);
+        } else if (type.equals("char")) {
+            value = (byte) ((byte) value - 1);
         } else {
             throw new RuntimeException("Cannot decrement " + type);
         }
     }
+    
+    /*
+     Methods to make this value a variable.
+     A variable is a value that can be changed.
+     A variable is stored in the environment.
+     */
 
     public void setVariable() {
         isVariable = true;
@@ -117,10 +141,13 @@ public class MiniJavaAny implements Cloneable {
         return isVariable;
     }
 
+
+    /* Override methods */
+
     @Override
     public String toString() {
         String typeStr = type.toString().toLowerCase();
-        Object value = type == Type.CHAR ? (char)(byte) this.value : this.value;
+        Object value = type.equals("char") ? (char)(byte) this.value : this.value;
         return "(" + typeStr + ") " + value;
     }
 

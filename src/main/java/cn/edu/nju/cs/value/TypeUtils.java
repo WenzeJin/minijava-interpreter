@@ -2,17 +2,17 @@ package cn.edu.nju.cs.value;
 
 public class TypeUtils {
 
-    public static boolean isType(MiniJavaAny value, MiniJavaAny.Type type) {
-        if (value.getType() == type) {
+    public static boolean isType(MiniJavaAny value, MiniJavaAny.BasicType type) {
+        if (value.isBasicType(type)) {
             return true;
         } else {
             throw new RuntimeException("Type mismatch. Requires " + type + ", but got " + value.getType() + ".");
         }
     }
 
-    public static boolean isTypes(MiniJavaAny value, MiniJavaAny.Type ... types) {
-        for (MiniJavaAny.Type type : types) {
-            if (value.getType() == type) {
+    public static boolean isTypes(MiniJavaAny value, MiniJavaAny.BasicType ... types) {
+        for (var type : types) {
+            if (value.isBasicType(type)) {
                 return true;
             }
         }
@@ -20,7 +20,7 @@ public class TypeUtils {
     }
 
     public static boolean isSameType(MiniJavaAny value1, MiniJavaAny value2) {
-        if (value1.getType() == value2.getType()) {
+        if (value1.getType().equals(value2.getType())) {
             return true;
         } else {
             throw new RuntimeException("Type mismatch. Requires " + value1.getType() + ", but got " + value2.getType() + ".");
