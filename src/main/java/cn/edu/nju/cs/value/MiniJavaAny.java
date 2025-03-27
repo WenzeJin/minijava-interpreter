@@ -77,6 +77,10 @@ public class MiniJavaAny implements Cloneable {
         return this.type.equals(type.toString().toLowerCase());
     }
 
+    public boolean isNumber() {
+        return isBasicType(BasicType.INT) || isBasicType(BasicType.CHAR);
+    }
+
     /* Set values */
 
     public void setValue(Object value) {

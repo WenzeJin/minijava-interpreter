@@ -1,8 +1,32 @@
 package cn.edu.nju.cs.value;
 
+/**
+ * Utility class for type checking and validation of MiniJavaAny values.
+ * Provides methods to verify if a value matches a specific type, if two values
+ * have the same type, and if a value is of a numeric type.
+ *
+ * <p>Methods in this class throw {@link RuntimeException} when type mismatches
+ * occur, providing detailed error messages for debugging purposes.</p>
+ *
+ * <ul>
+ *   <li>{@link #isBasicType(MiniJavaAny, MiniJavaAny.BasicType)}: Checks if a value matches a specified basic type.</li>
+ *   <li>{@link #isSameType(MiniJavaAny, MiniJavaAny)}: Verifies if two values have the same type.</li>
+ *   <li>{@link #assertNumber(MiniJavaAny)}: Ensures a value is of a numeric type (int or char).</li>
+ * </ul>
+ */
 public class TypeUtils {
 
-    public static boolean isType(MiniJavaAny value, MiniJavaAny.BasicType type) {
+    /**
+     * Checks if the given value is of the specified basic type.
+     * If the value matches the specified type, the method returns true.
+     * Otherwise, it throws a RuntimeException indicating a type mismatch.
+     *
+     * @param value The value to be checked.
+     * @param type The expected basic type of the value.
+     * @return true if the value is of the specified basic type.
+     * @throws RuntimeException if the value's type does not match the specified type.
+     */
+    public static boolean isBasicType(MiniJavaAny value, MiniJavaAny.BasicType type) {
         if (value.isBasicType(type)) {
             return true;
         } else {
@@ -10,20 +34,36 @@ public class TypeUtils {
         }
     }
 
-    public static boolean isTypes(MiniJavaAny value, MiniJavaAny.BasicType ... types) {
-        for (var type : types) {
-            if (value.isBasicType(type)) {
-                return true;
-            }
-        }
-        throw new RuntimeException("Type mismatch. Requires " + types + ", but got " + value.getType() + ".");
-    }
-
+    /**
+     * Checks if two MiniJavaAny values have the same type.
+     *
+     * @param value1 The first MiniJavaAny value to compare.
+     * @param value2 The second MiniJavaAny value to compare.
+     * @return {@code true} if both values have the same type.
+     * @throws RuntimeException if the types of the two values do not match.
+     *         The exception message includes the expected type and the actual type.
+     */
     public static boolean isSameType(MiniJavaAny value1, MiniJavaAny value2) {
         if (value1.getType().equals(value2.getType())) {
             return true;
         } else {
-            throw new RuntimeException("Type mismatch. Requires " + value1.getType() + ", but got " + value2.getType() + ".");
+            throw new RuntimeException(
+                    "Type mismatch. Requires " + value1.getType() + ", but got " + value2.getType() + ".");
         }
     }
+    
+    /**
+     * Asserts that the given value is of a numeric type (int or char).
+     * If the value is not a number, this method throws a {@link RuntimeException}
+     * with a descriptive error message indicating the type mismatch.
+     *
+     * @param value the {@link MiniJavaAny} value to be checked
+     * @throws RuntimeException if the value is not a number
+     */
+    public static void assertNumber(MiniJavaAny value) {
+        if (!value.isNumber()) {
+            throw new RuntimeException("Type mismatch. Requires number (int / char), but got " + value.getType() + ".");
+        }
+    }
+
 }

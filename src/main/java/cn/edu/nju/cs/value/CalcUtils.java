@@ -7,74 +7,76 @@ public class CalcUtils {
     public static MiniJavaAny add(MiniJavaAny a, MiniJavaAny b) {
         if (a.isBasicType(BasicType.STRING)|| b.isBasicType(BasicType.STRING)) {
             return new MiniJavaAny(BasicType.STRING, a.getString() + b.getString());
-        } else  {
+        } else {
+            TypeUtils.assertNumber(a);
+            TypeUtils.assertNumber(b);
             return new MiniJavaAny(BasicType.INT, a.getInt() + b.getInt());
         }
     }
 
     public static MiniJavaAny sub(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() - b.getInt());
     }
 
     public static MiniJavaAny mul(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() * b.getInt());
     }
 
     public static MiniJavaAny div(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() / b.getInt());
     }
 
     public static MiniJavaAny mod(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() % b.getInt());
     }
 
     public static MiniJavaAny shiftLeft(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() << b.getInt());
     }
 
     public static MiniJavaAny shiftRight(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() >> b.getInt());
     }
 
     public static MiniJavaAny unsignedShiftRight(MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() >>> b.getInt());
     }
 
     public static MiniJavaAny leq (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.BOOLEAN, a.getInt() <= b.getInt());
     }
 
     public static MiniJavaAny geq (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.BOOLEAN, a.getInt() >= b.getInt());
     }
 
     public static MiniJavaAny lt (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.BOOLEAN, a.getInt() < b.getInt());
     }
 
     public static MiniJavaAny gt (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.BOOLEAN, a.getInt() > b.getInt());
     }
 
@@ -99,20 +101,20 @@ public class CalcUtils {
     }
 
     public static MiniJavaAny bitAnd (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() & b.getInt());
     }
 
     public static MiniJavaAny bitXor (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() ^ b.getInt());
     }
 
     public static MiniJavaAny bitOr (MiniJavaAny a, MiniJavaAny b) {
-        TypeUtils.isTypes(a, BasicType.INT, BasicType.CHAR);
-        TypeUtils.isTypes(b, BasicType.INT, BasicType.CHAR);
+        TypeUtils.assertNumber(a);
+        TypeUtils.assertNumber(b);
         return new MiniJavaAny(BasicType.INT, a.getInt() | b.getInt());
     }
 
