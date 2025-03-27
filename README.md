@@ -50,3 +50,7 @@ To run the interpreter, use the following command:
 ```shell
 java -jar <path-to-jar> <path-to-source>
 ```
+
+> [!Caution]
+> This project is licensed under the MIT License. See the [License](LICENSE) file for more information.  
+> Copyriht (c) 2025, Wenze Jin, All rights reserved.
