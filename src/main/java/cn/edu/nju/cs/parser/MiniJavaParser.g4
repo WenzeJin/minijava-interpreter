@@ -35,7 +35,44 @@ options {
     tokenVocab = MiniJavaLexer;
 }
 
-compilationUnit : block EOF;
+compilationUnit : methodDeclaration* EOF;
+
+methodDeclaration
+    : (typeType | VOID) identifier formalParameters methodBody = block
+    ;
+
+variableDeclarator
+    : identifier ('=' variableInitializer)?
+    ;
+
+variableInitializer
+    : arrayInitializer
+    | expression
+    ;
+
+arrayInitializer
+    : '{' (variableInitializer (',' variableInitializer)* ','?)? '}'
+    ;
+
+formalParameters
+    : '(' formalParameterList? ')'
+    ;
+
+formalParameterList
+    : formalParameter (',' formalParameter)*
+    ;
+
+formalParameter
+    : typeType identifier
+    ;
+
+literal
+    : DECIMAL_LITERAL
+    | CHAR_LITERAL
+    | STRING_LITERAL
+    | BOOL_LITERAL
+    | NULL_LITERAL
+    ;
 
 block
     : '{' blockStatement* '}'
@@ -47,45 +84,8 @@ blockStatement
     ;
 
 localVariableDeclaration
-    : primitiveType identifier '=' expression
-    | primitiveType identifier
-    ;
-
-statement
-    : block
-    | SEMI
-    | expression ';'
-    ;
-
-expression
-    : primary
-    | expression postfix = ('++' | '--')
-    | prefix = ('+' | '-' | '++' | '--' | '~' | 'not') expression
-    | '(' primitiveType ')' expression
-    | expression bop = ('*' | '/' | '%') expression
-    | expression bop = ('+' | '-') expression
-    | expression bop = ('<<' | '>>>' | '>>')  expression
-    | expression bop = ('<=' | '>=' | '>' | '<') expression
-    | expression bop = ('==' | '!=') expression
-    | expression bop = '&' expression
-    | expression bop = '^' expression
-    | expression bop = '|' expression
-    | expression bop = 'and' expression
-    | expression bop = 'or' expression
-    | <assoc = right> expression bop = '?' expression ':' expression
-    | <assoc = right> expression bop = (
-        '=' | '+=' | '-=' | '*=' | '/=' | '&=' | '|=' | '^=' | '>>=' | '>>>=' | '<<=' | '%='
-    ) expression
-    ;
-
-primary : '(' expression ')' | literal | identifier ;
-
-literal
-    : DECIMAL_LITERAL
-    | CHAR_LITERAL
-    | STRING_LITERAL
-    | BOOL_LITERAL
-    | NULL_LITERAL
+    : VAR identifier '=' expression
+    | typeType variableDeclarator
     ;
 
 identifier
@@ -108,9 +108,89 @@ identifier
     | ASSERT
     ;
 
+statement
+    : block
+    | IF parExpression statement (ELSE statement)?
+    | FOR '(' forControl ')' statement
+    | WHILE parExpression statement
+    | RETURN expression? ';'
+    | BREAK ';'
+    | CONTINUE ';'
+    | SEMI
+    | expression ';'
+    ;
+
+parExpression
+    : '(' expression ')'
+    ;
+
+forControl
+    : forInit? ';' expression? ';' forUpdate = expressionList?
+    ;
+
+forInit
+    : localVariableDeclaration
+    | expressionList
+    ;
+
+expressionList
+    : expression (',' expression)*
+    ;
+
+expression
+    : primary
+    | expression '[' expression ']'
+    | methodCall
+    | expression postfix = ('++' | '--')
+    | prefix = ('+' | '-' | '++' | '--' | '~' | 'not') expression
+    | '(' typeType ')' expression
+    | NEW creator
+    | expression bop = ('*' | '/' | '%') expression
+    | expression bop = ('+' | '-') expression
+    | expression bop = ('<<' | '>>>' | '>>') expression
+    | expression bop = ('<=' | '>=' | '>' | '<') expression
+    | expression bop = ('==' | '!=') expression
+    | expression bop = '&' expression
+    | expression bop = '^' expression
+    | expression bop = '|' expression
+    | expression bop = 'and' expression
+    | expression bop = 'or' expression
+    | <assoc = right> expression bop = '?' expression ':' expression
+    | <assoc = right> expression bop = (
+        '=' | '+=' | '-=' | '*=' | '/=' | '&=' | '|=' | '^=' | '>>=' | '>>>=' | '<<=' | '%='
+    ) expression
+    ;
+
+primary : '(' expression ')' | literal | identifier ;
+
+methodCall
+    : identifier arguments
+    ;
+
+creator
+    : createdName arrayCreatorRest
+    ;
+
+createdName
+    : primitiveType
+    ;
+
+arrayCreatorRest
+    : ('[' ']')+ arrayInitializer
+    | ('[' expression ']')+ ('[' ']')*
+    ;
+
+typeType
+    : primitiveType ('[' ']')*
+    ;
+
 primitiveType
     : BOOLEAN
     | CHAR
     | INT
     | STRING
+    ;
+
+arguments
+    : '(' expressionList? ')'
     ;

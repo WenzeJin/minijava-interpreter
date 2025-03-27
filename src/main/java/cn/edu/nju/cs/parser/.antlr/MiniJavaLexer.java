@@ -1,6 +1,4 @@
-// Generated from MiniJavaLexer.g4 by ANTLR 4.13.2
-package cn.edu.nju.cs.parser;
-
+// Generated from /Users/jinwenze/Coding/2025/Interpreter&VM/minijava-interpreter/src/main/java/cn/edu/nju/cs/parser/MiniJavaLexer.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -12,7 +10,7 @@ import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue", "this-escape"})
 public class MiniJavaLexer extends Lexer {
-	static { RuntimeMetaData.checkVersion("4.13.2", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.13.1", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
