@@ -1,7 +1,7 @@
 package cn.edu.nju.cs.core;
 
 import cn.edu.nju.cs.env.MethodSignature;
-import cn.edu.nju.cs.env.CostumMethod;
+import cn.edu.nju.cs.env.CustomMethod;
 import cn.edu.nju.cs.env.MethodBody;
 import cn.edu.nju.cs.env.RuntimeEnv;
 import cn.edu.nju.cs.parser.MiniJavaParser;
@@ -16,6 +16,7 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     public Interpreter() {
         super();
         env = new RuntimeEnv();
+        env.registerBuiltInMethod();
     }
 
     public Interpreter(RuntimeEnv env) {
@@ -32,10 +33,10 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         if (mainEntry == null) {
             throw new RuntimeException("No main method found.");
         }
-        assert mainEntry instanceof CostumMethod;
+        assert mainEntry instanceof CustomMethod;
         System.out.println(env);
         MiniJavaAny ret = mainEntry.invoke(env, new MiniJavaAny[0]);
-        System.out.println("Program exits with the code " + ret + ".");
+        System.out.println("Program exits with the code " + ret.getInt() + ".");
         return null;
     }
 
@@ -71,7 +72,7 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
                 : new String[0];
         var methodBodyContext = ctx.methodBody;
         var methodSignature = new MethodSignature(methodName, returnType, parameterType);
-        var methodBody = new CostumMethod(methodSignature, parameterName, methodBodyContext);
+        var methodBody = new CustomMethod(methodSignature, parameterName, methodBodyContext);
         env.registerMethod(methodSignature, methodBody);
         return null;
     }
@@ -271,6 +272,42 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     }
 
     @Override
+    public MiniJavaAny visitMethodCall(MiniJavaParser.MethodCallContext ctx) {
+        /*
+         * methodCall
+         * : identifier arguments
+         * ;
+         */
+        String methodName = ctx.identifier().getText();
+        var args = ctx.arguments().expressionList();
+        MethodBody methodBody = null;
+        MethodSignature signature = null;
+        MiniJavaAny[] argValues = null;
+        if (args == null) {
+            // returnType is not important here
+            signature = new MethodSignature(methodName, "void", new String[0]);
+            methodBody = env.getMethod(signature);
+            argValues = new MiniJavaAny[0];
+        } else {
+            argValues = new MiniJavaAny[args.expression().size()];
+            for (int i = 0; i < args.expression().size(); i++) {
+                // pass values, not references
+                argValues[i] = new MiniJavaAny(visit(args.expression(i)));
+            }
+            String[] parameterTypes = new String[argValues.length];
+            for (int i = 0; i < argValues.length; i++) {
+                parameterTypes[i] = argValues[i].getType();
+            }
+            signature = new MethodSignature(methodName, "void", parameterTypes);
+            methodBody = env.getMethod(signature);
+        }
+        if (methodBody == null) {
+            throw new RuntimeException("Method " + signature + " not found.");
+        }
+        return methodBody.invoke(env, argValues);
+    }
+
+    @Override
     public MiniJavaAny visitExpression(MiniJavaParser.ExpressionContext ctx) {
 
         if (ctx.primary() != null) {
@@ -325,8 +362,9 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             }
 
         } else if (ctx.typeType() != null) {
-            // TODO: deal with type cast
-            return null;
+            String type = ctx.typeType().getText();
+            MiniJavaAny value = visit(ctx.expression(0));
+            return TypeCast.castTo(value, type);
         } else if (ctx.bop != null) {
             if (ctx.bop.getText().equals("and") || ctx.bop.getText().equals("or")) {
                 // short circuit
@@ -480,6 +518,8 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
                 default:
                     throw new RuntimeException("Unknown binary operator.");
             }
+        } else if (ctx.methodCall() != null) {
+            return visitMethodCall(ctx.methodCall());
         } else {
             throw new RuntimeException("Unknown expression.");
         }

@@ -33,7 +33,7 @@ public class Main {
         } catch (NullPointerError e) {
             e.exitLog();
         } catch (Exception e) {
-            System.out.println("Process exits with the code 34.");
+            System.out.println("Process exits with exception.");
             e.printStackTrace();
         }
         

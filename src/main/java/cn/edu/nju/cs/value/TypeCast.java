@@ -14,6 +14,10 @@ public class TypeCast {
 
     public static MiniJavaAny castTo(MiniJavaAny src, String type) {
         MiniJavaAny res = null;
+        if (type.equals("void")) {
+            // void means any type so we don't need to do anything
+            return src;
+        }
         switch (src.getType()) {
             case "int":
                 switch (type) {

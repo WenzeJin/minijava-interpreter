@@ -1,5 +1,4 @@
 target/
 mjfiles/
 .idea/
-*.mj
 .DS_Store

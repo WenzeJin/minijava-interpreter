@@ -8,13 +8,13 @@ import cn.edu.nju.cs.value.TypeUtils;
 import cn.edu.nju.cs.core.Interpreter;
 import cn.edu.nju.cs.throwables.*;
 
-public class CostumMethod implements MethodBody {
+public class CustomMethod implements MethodBody {
 
     final MethodSignature methodSignature;
     final MiniJavaParser.BlockContext mothodBody;
     final String[] parameterNames;
 
-    public CostumMethod(MethodSignature methodSignature, String[] parameterNames, MiniJavaParser.BlockContext mothodBody) {
+    public CustomMethod(MethodSignature methodSignature, String[] parameterNames, MiniJavaParser.BlockContext mothodBody) {
         this.methodSignature = methodSignature;
         this.mothodBody = mothodBody;
         this.parameterNames = parameterNames;
@@ -22,6 +22,10 @@ public class CostumMethod implements MethodBody {
 
     public MiniJavaParser.BlockContext getMothodBody() {
         return mothodBody;
+    }
+
+    public MethodSignature getMethodSignature() {
+        return methodSignature;
     }
 
     @Override

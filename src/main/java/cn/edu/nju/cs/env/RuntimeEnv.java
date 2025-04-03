@@ -61,7 +61,7 @@ public class RuntimeEnv {
             int candidate = 0;
             MethodBody method = null;
             for (MethodSignature signature : methodTable.keySet()) {
-                int cost = methodSignature.canCall(signature);
+                int cost = signature.canBeCalled(methodSignature);
                 if (cost >= 0 && cost < minimumCost) {
                     minimumCost = cost;
                     candidate = 1;
@@ -83,6 +83,16 @@ public class RuntimeEnv {
             throw new RuntimeException("Method " + methodSignature.getMethodName() + " already exists");
         }
         methodTable.put(methodSignature, methodBody);
+    }
+
+    public void registerBuiltInMethod() {
+        BuiltInMethod.initialize();
+        BuiltInMethod.getBuildInMethodsRegistry().forEach((methodSignature, methodBody) -> {
+            if (methodTable.containsKey(methodSignature)) {
+                throw new RuntimeException("Method " + methodSignature.getMethodName() + " already exists");
+            }
+            methodTable.put(methodSignature, methodBody);
+        });
     }
 
     public void enterBlock() {
@@ -151,6 +161,7 @@ public class RuntimeEnv {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("--------------------\n");
         sb.append("RuntimeEnv: \n");
         for (int i = 0; i < varTableStack.size(); i++) {
             sb.append("VarTable " + i + ": \n" + varTableStack.get(i).toString());
@@ -159,6 +170,14 @@ public class RuntimeEnv {
         for (MethodSignature methodSignature : methodTable.keySet()) {
             sb.append(methodSignature.toString() + "\n");
         }
+        sb.append("CacheTable: \n");
+        for (MethodSignature methodSignature : cacheTable.keySet()) {
+            var body = cacheTable.get(methodSignature);
+            String bodyString = body instanceof BuiltInMethod ? ((BuiltInMethod)body).getFunction().getClass().getSimpleName()
+                    : ((CustomMethod) body).getMethodSignature().toString();
+            sb.append(methodSignature.toString() + " -> " + bodyString + "\n");
+        }
+        sb.append("--------------------");
         return sb.toString();
     }
 }

@@ -84,6 +84,10 @@ public class TypeUtils {
             }
             return true;
         }
+        if (to.equals("void")) {
+            // void means any type
+            return true;
+        }
         return false;
     }
 }

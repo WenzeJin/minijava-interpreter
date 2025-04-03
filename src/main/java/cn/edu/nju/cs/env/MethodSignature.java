@@ -56,7 +56,7 @@ public class MethodSignature {
      * @param other the other method signature to compare with
      * @return 0 if the method signatures are identical, positive integer (cost) if the other method signature can be called with this one by implicit casting, -1 if they are incompatible
      */
-    public int canCall(MethodSignature other) {
+    public int canBeCalled(MethodSignature other) {
         int cost = 0;
         if (!this.methodName.equals(other.methodName)) {
             return -1;
