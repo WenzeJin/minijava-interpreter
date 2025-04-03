@@ -16,12 +16,15 @@ public class RuntimeEnv {
     // this cache is used to store the method signature which is not same as those in methodTable, but can be called by implicit cast;
     final Map<MethodSignature, MethodBody> cacheTable;
 
+    boolean createdNewScope; // tell the interpreter whether we have already created a new scope for a block content
+
     public RuntimeEnv() {
         varTableStack = new Stack<>();
         methodTable = new HashMap<>();
         cacheTable = new HashMap<>();
         methodBoundary = new Stack<>();
         scopeName = new Stack<>();
+        createdNewScope = false;
     }
 
     public VarTable getCurrentVarTable() {
@@ -29,6 +32,22 @@ public class RuntimeEnv {
             return null;
         }
         return varTableStack.peek();
+    }
+
+    public boolean isCreatedNewScope() {
+        return createdNewScope;
+    }
+    
+    /**
+     * Set the flag to indicate that a new scope has been created.
+     * 
+     */
+    public void setCreatedNewScope() {
+        createdNewScope = true;
+    }
+
+    public void useNewScope() {
+        createdNewScope = false;
     }
 
     public MethodBody getMethod(MethodSignature methodSignature) {
@@ -74,6 +93,7 @@ public class RuntimeEnv {
         scopeName.push(functionName);
         methodBoundary.push(varTableStack.size());
         varTableStack.push(new VarTable());
+        createdNewScope = true;
     }
 
     public void exitBlock() {
@@ -127,4 +147,18 @@ public class RuntimeEnv {
         return varTableStack.peek().init(identifier, value);
     }
 
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("RuntimeEnv: \n");
+        for (int i = 0; i < varTableStack.size(); i++) {
+            sb.append("VarTable " + i + ": \n" + varTableStack.get(i).toString());
+        }
+        sb.append("MethodTable: \n");
+        for (MethodSignature methodSignature : methodTable.keySet()) {
+            sb.append(methodSignature.toString() + "\n");
+        }
+        return sb.toString();
+    }
 }

@@ -49,6 +49,9 @@ public class CostumMethod implements MethodBody {
         }
         
         // 4. exit scope
+        // TODO: remove this
+        System.out.println("Exiting function " + methodSignature.getMethodName());
+        System.out.println(env);
         env.exitFunction();
 
         // 5. check return type
@@ -60,7 +63,7 @@ public class CostumMethod implements MethodBody {
                 throw new TypeError("Method " + methodSignature.getMethodName() + " should return " + returnType + ", but returns nothing");
             }
         }
-        if (returnType == returnValue.getType()) {
+        if (returnType.equals(returnValue.getType())) {
             return returnValue;
         } else if (TypeUtils.canCastImplicit(returnValue.getType(), returnType)) {
             return TypeCast.castTo(returnValue, returnType);

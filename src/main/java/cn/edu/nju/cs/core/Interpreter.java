@@ -1,10 +1,14 @@
 package cn.edu.nju.cs.core;
 
+import cn.edu.nju.cs.env.MethodSignature;
+import cn.edu.nju.cs.env.CostumMethod;
+import cn.edu.nju.cs.env.MethodBody;
 import cn.edu.nju.cs.env.RuntimeEnv;
 import cn.edu.nju.cs.parser.MiniJavaParser;
 import cn.edu.nju.cs.parser.MiniJavaParserBaseVisitor;
 import cn.edu.nju.cs.value.*;
 import cn.edu.nju.cs.value.MiniJavaAny.BasicType;
+import cn.edu.nju.cs.throwables.*;
 
 public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     final RuntimeEnv env;
@@ -22,14 +26,69 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
 
     @Override
     public MiniJavaAny visitCompilationUnit(MiniJavaParser.CompilationUnitContext ctx) {
-        return visit(ctx.block());
+        visitChildren(ctx);
+        MethodSignature mainSignature = new MethodSignature("main", "int", new String[0]);
+        MethodBody mainEntry = env.getMethod(mainSignature);
+        if (mainEntry == null) {
+            throw new RuntimeException("No main method found.");
+        }
+        assert mainEntry instanceof CostumMethod;
+        System.out.println(env);
+        MiniJavaAny ret = mainEntry.invoke(env, new MiniJavaAny[0]);
+        System.out.println("Program exits with the code " + ret + ".");
+        return null;
+    }
+
+    @Override
+    public MiniJavaAny visitMethodDeclaration(MiniJavaParser.MethodDeclarationContext ctx) {
+        /*
+         * methodDeclaration
+         * : (typeType | VOID) identifier formalParameters methodBody = block;
+         * 
+         * formalParameters
+         * : '(' formalParameterList? ')'
+         * 
+         * formalParameterList
+         * : formalParameter (',' formalParameter)*
+         * 
+         * formalParameter
+         * : typeType identifier
+         * 
+         */
+        String methodName = ctx.identifier().getText();
+        String returnType = ctx.typeType() != null ? ctx.typeType().getText() : "void";
+        var formalParameterList = ctx.formalParameters().formalParameterList();
+        
+        String[] parameterType = formalParameterList != null ? 
+                formalParameterList.formalParameter().stream()
+                        .map(p -> p.typeType().getText())
+                        .toArray(String[]::new)
+                : new String[0];
+        String[] parameterName = formalParameterList != null ?
+                formalParameterList.formalParameter().stream()
+                        .map(p -> p.identifier().getText())
+                        .toArray(String[]::new)
+                : new String[0];
+        var methodBodyContext = ctx.methodBody;
+        var methodSignature = new MethodSignature(methodName, returnType, parameterType);
+        var methodBody = new CostumMethod(methodSignature, parameterName, methodBodyContext);
+        env.registerMethod(methodSignature, methodBody);
+        return null;
     }
 
     @Override
     public MiniJavaAny visitBlock(MiniJavaParser.BlockContext ctx) {
-        env.enterBlock();
+        boolean newScope = false;
+        if (!env.isCreatedNewScope()) {
+            env.enterBlock();
+            newScope = true;
+        } else {
+            env.useNewScope();
+        }
         var ret = visitChildren(ctx);
-        env.exitBlock();
+        if (newScope) {
+            env.exitBlock();
+        }
         return ret;
     }
 
@@ -40,55 +99,172 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
 
     @Override
     public MiniJavaAny visitLocalVariableDeclaration(MiniJavaParser.LocalVariableDeclarationContext ctx) {
-        MiniJavaAny value = null;
-        String id = null;
-
-        if (ctx.getChildCount() == 2)  {
-            // PrimitiveType Identifier
-            value = visit(ctx.primitiveType());
-            id = ctx.identifier().getText();
-
-        } else if (ctx.getChildCount() == 4) {
-            // PrimitiveType Identifier '=' Expression
-            value = visit(ctx.expression());
-            if (ctx.primitiveType().getText().equals("int")) {
-                TypeUtils.assertNumber(value);
+        /**
+         * localVariableDeclaration
+         * : VAR identifier '=' expression
+         * | typeType variableDeclarator
+         * ;
+         * 
+         * variableDeclarator
+         * : identifier ('=' expression)?
+         * ;
+         */
+        if (ctx.VAR() != null) {
+            // VAR identifier '=' expression
+            MiniJavaAny value = visit(ctx.expression());
+            String identifier = ctx.identifier().getText();
+            if (value.isLiteral() && value.isBasicType(BasicType.CHAR)) {
+                // we will make it int when its a char literal
                 value = new MiniJavaAny(BasicType.INT, value.getInt());
-            } else if (ctx.primitiveType().getText().equals("char")) {
-                TypeUtils.assertNumber(value);
-                value = new MiniJavaAny(BasicType.CHAR, value.getChar());
-            } else if (ctx.primitiveType().getText().equals("boolean")) {
-                TypeUtils.isBasicType(value, BasicType.BOOLEAN);
-                value = new MiniJavaAny(BasicType.BOOLEAN, value.getBoolean());
-            } else if (ctx.primitiveType().getText().equals("string")) {
-                TypeUtils.isBasicType(value, BasicType.STRING);
-                value = new MiniJavaAny(BasicType.STRING, value.getString());
             }
-
-            id = ctx.identifier().getText();
+            if (!env.init(identifier, value)) {
+                throw new RuntimeException("Variable " + identifier + " already exists.");
+            }
+        } else {
+            // typeType variableDeclarator
+            MiniJavaAny prototype = visit(ctx.typeType());
+            var variableDeclarator = ctx.variableDeclarator();
+            String identifier = variableDeclarator.identifier().getText();
+            if (variableDeclarator.variableInitializer() != null) {
+                // variableDeclarator '=' expression
+                MiniJavaAny value = visit(variableDeclarator.variableInitializer());
+                if (!value.getType().equals(prototype.getType())
+                        && !TypeUtils.canCastImplicit(value.getType(), prototype.getType())) {
+                    // wrong type initialization and cannot cast implicitly
+                    throw new TypeError("Variable " + identifier + " cannot be initialized with type " + value.getType()
+                            + ", expected " + prototype.getType());
+                } else if (!value.getType().equals(prototype.getType()) && TypeUtils.canCastImplicit(value.getType(), prototype.getType())) {
+                    // cast implicitly
+                    value = TypeCast.castTo(value, prototype.getType());
+                }
+                if (!env.init(identifier, value)) {
+                    throw new RuntimeException("Variable " + identifier + " already exists.");
+                }
+            } else {
+                // variableDeclarator
+                prototype.initializeDefaultValue();
+                if (!env.init(identifier, prototype)) {
+                    throw new RuntimeException("Variable " + identifier + " already exists.");
+                }
+            }
         }
-
-        if (id == null) {
-            return null;
-        }
-
-        if (!env.init(id, value)) {
-            throw new RuntimeException("Variable " + id + " already defined.");
-        }
-
         return null;
     }
 
     @Override
     public MiniJavaAny visitStatement(MiniJavaParser.StatementContext ctx) {
-        // 处理 block 语句
+        /*
+        statement
+        : block
+        | IF parExpression statement (ELSE statement)?
+        | FOR '(' forControl ')' statement
+        | WHILE parExpression statement
+        | RETURN expression? ';'
+        | BREAK ';'
+        | CONTINUE ';'
+        | SEMI
+        | expression ';'
+        ;
+         */
+
+        // deal with block
         if (ctx.block() != null) {
             return visit(ctx.block());
         }
 
-        // 处理表达式语句 `expression;`
-        if (ctx.expression() != null) {
+        // deal with expression
+        if (ctx.expression() != null && ctx.getChildCount() == 2) {
             return visit(ctx.expression());
+        }
+
+        // deal with BREAK
+        if (ctx.BREAK() != null) {
+            // 处理 break 语句
+            throw new Break();
+        }
+
+        // deal with CONTINUE
+        if (ctx.CONTINUE() != null) {
+            // 处理 continue 语句
+            throw new Continue();
+        }
+
+        // deal with IF
+        if (ctx.IF() != null) {
+            // 处理 if 语句
+            MiniJavaAny condition = visit(ctx.parExpression().expression());
+            TypeUtils.isBasicType(condition, BasicType.BOOLEAN);
+            if (condition.getBoolean()) {
+                return visit(ctx.statement(0));
+            } else if (ctx.ELSE() != null) {
+                return visit(ctx.statement(1));
+            }
+        }
+
+        // deal with WHILE
+        if (ctx.WHILE() != null) {
+            // 处理 while 语句
+            while (true) {
+                MiniJavaAny condition = visit(ctx.parExpression().expression());
+                TypeUtils.isBasicType(condition, BasicType.BOOLEAN);
+                if (!condition.getBoolean()) {
+                    break;
+                }
+                try {
+                    visit(ctx.statement(0));
+                } catch (Continue e) {
+                    // continue
+                } catch (Break e) {
+                    // break
+                    break;
+                }
+            }
+        }
+
+        // deal with FOR
+        if (ctx.FOR() != null) {
+            // 处理 for 语句
+            /*
+             * forControl
+             * : forInit? ';' expression? ';' forUpdate?
+             */
+            var forInit = ctx.forControl().forInit();
+            var expression = ctx.forControl().expression();
+            var forUpdate = ctx.forControl().forUpdate;
+            if (forInit != null) {
+                visitChildren(forInit);
+            }
+            while (true) {
+                if (expression != null) {
+                    MiniJavaAny condition = visit(expression);
+                    TypeUtils.isBasicType(condition, BasicType.BOOLEAN);
+                    if (!condition.getBoolean()) {
+                        break;
+                    }
+                }
+                try {
+                    visit(ctx.statement(0));
+                } catch (Continue e) {
+                    // continue
+                } catch (Break e) {
+                    // break
+                    break;
+                }
+                if (forUpdate != null) {
+                    visit(forUpdate);
+                }
+            }
+        }
+
+        // deal with RETURN
+        if (ctx.RETURN() != null) {
+            // 处理 return 语句
+            if (ctx.expression() != null) {
+                MiniJavaAny value = visit(ctx.expression());
+                throw new Return(value);
+            } else {
+                throw new Return(null);
+            }
         }
 
         return null; // 默认返回 null
@@ -136,24 +312,21 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
                     if (value.isBasicType(BasicType.INT) || value.isBasicType(BasicType.CHAR)) {
                         value.increment();
                     } else {
-                        throw new RuntimeException("Prefix '++' operation must be applied to int or char.");
+                        throw new TypeError("Prefix '++' operation must be applied to int or char.");
                     }
                     return value;
                 case "--":
                     if (value.isBasicType(BasicType.INT) || value.isBasicType(BasicType.CHAR)) {
                         value.decrement();
                     } else {
-                        throw new RuntimeException("Prefix '--' operation must be applied to int or char.");
+                        throw new TypeError("Prefix '--' operation must be applied to int or char.");
                     }
                     return value;
             }
 
-        } else if (ctx.primitiveType() != null) {
-            // deal with type cast
-            String type = ctx.primitiveType().getText();
-            MiniJavaAny value = visit(ctx.expression(0));
-            return TypeCast.castTo(value, type);
-
+        } else if (ctx.typeType() != null) {
+            // TODO: deal with type cast
+            return null;
         } else if (ctx.bop != null) {
             if (ctx.bop.getText().equals("and") || ctx.bop.getText().equals("or")) {
                 // short circuit
@@ -192,8 +365,18 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
 
             switch (ctx.bop.getText()) {
                 case "=":
-                    lv.assign(rv);
-                    return lv.clone();
+                    if (!lv.isVariable()) {
+                        throw new RuntimeException("Left value of = must be a variable.");
+                    } else if (lv.getType().equals(rv.getType())) {
+                        lv.assign(rv);
+                    } else if (TypeUtils.canCastImplicit(rv.getType(), lv.getType())) {
+                        // cast implicitly
+                        rv = TypeCast.castTo(rv, lv.getType());
+                        lv.assign(rv);
+                        return lv.clone();
+                    } else {
+                        throw new TypeError("Cannot assign " + rv.getType() + " to " + lv.getType());
+                    }
                 case "*":
                     return CalcUtils.mul(lv, rv);
                 case "/":
@@ -314,19 +497,34 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         }
     }
 
+    private boolean inCharRange(int val) {
+        return Byte.MIN_VALUE <= val && val <= Byte.MAX_VALUE;
+    }
+
     @Override
     public MiniJavaAny visitLiteral(MiniJavaParser.LiteralContext ctx) {
+        MiniJavaAny value = null;
         if (ctx.DECIMAL_LITERAL() != null) {
-            return new MiniJavaAny(BasicType.INT, Integer.parseInt(ctx.getText()));
+            int val = Integer.parseInt(ctx.getText());
+            if (inCharRange(val)) {
+                value = new MiniJavaAny(BasicType.CHAR, (byte) Integer.parseInt(ctx.getText()));
+            } else {
+                value = new MiniJavaAny(BasicType.INT, Integer.parseInt(ctx.getText()));
+            }
         } else if (ctx.CHAR_LITERAL() != null) {
-            return new MiniJavaAny(BasicType.CHAR, (byte)ctx.getText().charAt(1));
+            value = new MiniJavaAny(BasicType.CHAR, (byte)ctx.getText().charAt(1));
         } else if (ctx.STRING_LITERAL() != null) {
             var lit = ctx.getText();
-            return new MiniJavaAny(BasicType.STRING, lit.substring(1, lit.length() - 1));
+            value = new MiniJavaAny(BasicType.STRING, lit.substring(1, lit.length() - 1));
         } else if (ctx.BOOL_LITERAL() != null) {
-            return new MiniJavaAny(BasicType.BOOLEAN, Boolean.parseBoolean(ctx.getText()));
+            value = new MiniJavaAny(BasicType.BOOLEAN, Boolean.parseBoolean(ctx.getText()));
+        } else if (ctx.NULL_LITERAL() != null) {
+            value = new MiniJavaAny(BasicType.NULL, null);
         }
-
+        if (value != null) {
+            value.setLiteral();
+            return value;
+        }
         return null;
     }
 
@@ -336,28 +534,15 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         return env.lookUp(identifier);
     }
 
+    /**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
     @Override
-    public MiniJavaAny visitPrimitiveType(MiniJavaParser.PrimitiveTypeContext ctx) {
-        String typeStr = ctx.getText();
-        return switch (typeStr) {
-            case "int" -> {
-                int value = 0;
-                yield new MiniJavaAny(BasicType.INT, value);
-            }
-            case "char" -> {
-                byte c = 0;
-                yield new MiniJavaAny(BasicType.CHAR, c);
-            }
-            case "boolean" -> {
-                boolean b = false;
-                yield new MiniJavaAny(BasicType.BOOLEAN, b);
-            }
-            case "string" -> {
-                String s = "";
-                yield new MiniJavaAny(BasicType.STRING, s);
-            }
-            default -> null;
-        };
+    public MiniJavaAny visitTypeType(MiniJavaParser.TypeTypeContext ctx) {
+        return new MiniJavaAny(ctx.getText(), null);
     }
 
 

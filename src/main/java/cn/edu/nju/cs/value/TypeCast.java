@@ -21,14 +21,14 @@ public class TypeCast {
                     case "char" -> res = new MiniJavaAny(BasicType.CHAR, src.getChar());
                     default -> throw new TypeError("Cannot cast int to " + type);
                 }
-                ;
+                break;
             case "char":
                 switch (type) {
                     case "int" -> res = new MiniJavaAny(BasicType.INT, src.getInt());
                     case "char" -> res = new MiniJavaAny(BasicType.CHAR, src.value);
                     default -> throw new TypeError("Cannot cast char to " + type);
                 }
-                ;
+                break;
             case "boolean":
                 throw new TypeError("Cannot cast boolean to " + type);
             case "string":
@@ -39,6 +39,7 @@ public class TypeCast {
                 } else {
                     throw new TypeError("Cannot cast null to " + type);
                 }
+                break;
         }
         ;
 

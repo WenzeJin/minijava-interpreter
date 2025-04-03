@@ -48,8 +48,11 @@ You can find the built JAR file in the `target` folder.
 To run the interpreter, use the following command:
 
 ```shell
-java -jar <path-to-jar> <path-to-source>
+java -cp target/minijava-1.0-SNAPSHOT-jar-with-dependencies.jar cn.edu.nju.cs.Main <filename>
 ```
+
+Where `<filename>` is the path to the MiniJava source file you want to run.
+
 
 > [!Caution]
 > This project is licensed under the MIT License. See the [License](LICENSE) file for more information.  

@@ -1,5 +1,7 @@
 package cn.edu.nju.cs.value;
 
+import cn.edu.nju.cs.throwables.TypeError;
+
 /**
  * Utility class for type checking and validation of MiniJavaAny values.
  * Provides methods to verify if a value matches a specific type, if two values
@@ -24,13 +26,13 @@ public class TypeUtils {
      * @param value The value to be checked.
      * @param type The expected basic type of the value.
      * @return true if the value is of the specified basic type.
-     * @throws RuntimeException if the value's type does not match the specified type.
+     * @throws TypeError if the value's type does not match the specified type.
      */
     public static boolean isBasicType(MiniJavaAny value, MiniJavaAny.BasicType type) {
         if (value.isBasicType(type)) {
             return true;
         } else {
-            throw new RuntimeException("Type mismatch. Requires " + type + ", but got " + value.getType() + ".");
+            throw new TypeError("Type mismatch. Requires " + type + ", but got " + value.getType() + ".");
         }
     }
 
@@ -40,14 +42,14 @@ public class TypeUtils {
      * @param value1 The first MiniJavaAny value to compare.
      * @param value2 The second MiniJavaAny value to compare.
      * @return {@code true} if both values have the same type.
-     * @throws RuntimeException if the types of the two values do not match.
+     * @throws TypeError if the types of the two values do not match.
      *         The exception message includes the expected type and the actual type.
      */
     public static boolean isSameType(MiniJavaAny value1, MiniJavaAny value2) {
         if (value1.getType().equals(value2.getType())) {
             return true;
         } else {
-            throw new RuntimeException(
+            throw new TypeError(
                     "Type mismatch. Requires " + value1.getType() + ", but got " + value2.getType() + ".");
         }
     }
@@ -58,11 +60,11 @@ public class TypeUtils {
      * with a descriptive error message indicating the type mismatch.
      *
      * @param value the {@link MiniJavaAny} value to be checked
-     * @throws RuntimeException if the value is not a number
+     * @throws TypeError if the value is not a number
      */
     public static void assertNumber(MiniJavaAny value) {
         if (!value.isNumber()) {
-            throw new RuntimeException("Type mismatch. Requires number (int / char), but got " + value.getType() + ".");
+            throw new TypeError("Type mismatch. Requires number (int / char), but got " + value.getType() + ".");
         }
     }
 
@@ -83,5 +85,5 @@ public class TypeUtils {
             return true;
         }
         return false;
-    } 
+    }
 }

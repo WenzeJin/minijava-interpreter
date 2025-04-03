@@ -2,6 +2,10 @@ package cn.edu.nju.cs;
 
 import cn.edu.nju.cs.parser.MiniJavaLexer;
 import cn.edu.nju.cs.parser.MiniJavaParser;
+import cn.edu.nju.cs.throwables.AssertionError;
+import cn.edu.nju.cs.throwables.NullPointerError;
+import cn.edu.nju.cs.throwables.TypeError;
+import cn.edu.nju.cs.throwables.ArrayOutOfBoundsError;
 import cn.edu.nju.cs.core.Interpreter;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -17,7 +21,22 @@ public class Main {
         MiniJavaParser parser = new MiniJavaParser(tokenStream);
         ParseTree pt = parser.compilationUnit();
 
-        new Interpreter().visit(pt);
+        try {
+            new Interpreter().visit(pt);
+        } catch (TypeError e) {
+            e.exitLog();
+            System.out.println(e.getMessage());
+        } catch (AssertionError e) {
+            e.exitLog();
+        } catch (ArrayOutOfBoundsError e) {
+            e.exitLog();
+        } catch (NullPointerError e) {
+            e.exitLog();
+        } catch (Exception e) {
+            System.out.println("Process exits with the code 34.");
+            e.printStackTrace();
+        }
+        
     }
 
 

@@ -61,9 +61,6 @@ public class MethodSignature {
         if (!this.methodName.equals(other.methodName)) {
             return -1;
         }
-        if (!this.returnType.equals(other.returnType)) {
-            return -1;
-        }
         if (this.parameterTypes.length != other.parameterTypes.length) {
             return -1;
         }
@@ -84,6 +81,7 @@ public class MethodSignature {
         StringBuilder sb = new StringBuilder();
         sb.append(returnType).append(" ").append(methodName).append("(");
         for (int i = 0; i < parameterTypes.length; i++) {
+            sb.append(parameterTypes[i]);
             if (i < parameterTypes.length - 1) {
                 sb.append(", ");
             }

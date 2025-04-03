@@ -1,6 +1,6 @@
 package cn.edu.nju.cs.throwables;
 
-public class Continue extends Throwable {
+public class Continue extends RuntimeException {
 
     public Continue() {
         super();

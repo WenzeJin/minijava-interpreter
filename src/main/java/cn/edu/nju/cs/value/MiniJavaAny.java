@@ -10,17 +10,27 @@ public class MiniJavaAny implements Cloneable {
     String type;
     Object value;
     boolean isVariable;
+    boolean isLiteral;
 
     public MiniJavaAny(String type, Object value) {
         this.type = type;
         this.value = value;
         this.isVariable = false;
+        this.isLiteral = false;
     }
 
     public MiniJavaAny(BasicType type, Object value) {
         this.type = type.toString().toLowerCase();
         this.value = value;
         this.isVariable = false;
+        this.isLiteral = false;
+    }
+
+    public MiniJavaAny(MiniJavaAny other) {
+        this.type = other.type;
+        this.value = other.value;
+        this.isVariable = false;
+        this.isLiteral = false;
     }
 
     public String getType() {
@@ -84,9 +94,25 @@ public class MiniJavaAny implements Cloneable {
     public boolean isNull() {
         return isBasicType(BasicType.NULL);
     }
-    
+
 
     /* Set values */
+
+    public void initializeDefaultValue() {
+        if (type.equals("int")) {
+            value = 0;
+        } else if (type.equals("char")) {
+            value = (byte) 0;
+        } else if (type.equals("boolean")) {
+            value = false;
+        } else if (type.equals("string")) {
+            value = "";
+        } else if (type.equals("null")) {
+            value = null;
+        } else {
+            value = null;
+        }
+    }
 
     public void setValue(Object value) {
         if (value.getClass() != this.value.getClass()) {
@@ -150,6 +176,14 @@ public class MiniJavaAny implements Cloneable {
         return isVariable;
     }
 
+    public void setLiteral() {
+        isLiteral = true;
+    }
+
+    public boolean isLiteral() {
+        return isLiteral;
+    }
+
 
     /* Override methods */
 
@@ -178,7 +212,7 @@ public class MiniJavaAny implements Cloneable {
 
     @Override
     public MiniJavaAny clone() {
-        return new MiniJavaAny(type, value);
+        return new MiniJavaAny(this);
     }
 
 }

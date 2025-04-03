@@ -2,7 +2,7 @@ package cn.edu.nju.cs.throwables;
 
 import cn.edu.nju.cs.value.MiniJavaAny;
 
-public class Return extends Throwable {
+public class Return extends RuntimeException {
 
     final MiniJavaAny returnValue;
 

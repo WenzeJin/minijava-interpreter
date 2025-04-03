@@ -39,5 +39,12 @@ public class VarTable {
         return table.get(identifier);
     }
 
-
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, MiniJavaAny> entry : table.entrySet()) {
+            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        return sb.toString();
+    }
 }

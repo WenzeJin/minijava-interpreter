@@ -1,6 +1,5 @@
 // Generated from MiniJavaParser.g4 by ANTLR 4.13.2
 package cn.edu.nju.cs.parser;
-
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
