@@ -6,11 +6,18 @@ import cn.edu.nju.cs.parser.MiniJavaParserBaseVisitor;
 import cn.edu.nju.cs.value.*;
 import cn.edu.nju.cs.value.MiniJavaAny.BasicType;
 
-public class MiniJavaVisitor extends MiniJavaParserBaseVisitor<MiniJavaAny> {
+public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     final RuntimeEnv env;
 
-    public MiniJavaVisitor() {
+    public Interpreter() {
+        super();
         env = new RuntimeEnv();
+    }
+
+    public Interpreter(RuntimeEnv env) {
+        // 继承环境
+        super();
+        this.env = env;
     }
 
     @Override

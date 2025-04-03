@@ -66,4 +66,22 @@ public class TypeUtils {
         }
     }
 
+    public static boolean canCastImplicit(String from, String to) {
+        if (from.equals(to)) {
+            return true;
+        }
+        if (from.equals("char") && to.equals("int")) {
+            return true;
+        }
+        if (from.equals("null")) {
+            String[] types = { "int", "char", "boolean", "string" };
+            for (var type : types) {
+                if (type.equals(to)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    } 
 }

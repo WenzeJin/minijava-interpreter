@@ -4,7 +4,7 @@ package cn.edu.nju.cs.value;
 public class MiniJavaAny implements Cloneable {
 
     public enum BasicType {
-        INT, CHAR, BOOLEAN, STRING
+        INT, CHAR, BOOLEAN, STRING, NULL
     }
 
     String type;
@@ -80,6 +80,11 @@ public class MiniJavaAny implements Cloneable {
     public boolean isNumber() {
         return isBasicType(BasicType.INT) || isBasicType(BasicType.CHAR);
     }
+
+    public boolean isNull() {
+        return isBasicType(BasicType.NULL);
+    }
+    
 
     /* Set values */
 

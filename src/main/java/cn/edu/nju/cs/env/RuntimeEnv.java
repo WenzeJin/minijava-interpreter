@@ -1,16 +1,27 @@
 package cn.edu.nju.cs.env;
 
 import cn.edu.nju.cs.value.MiniJavaAny;
-import cn.edu.nju.cs.utils.PrettyOutput;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
 public class RuntimeEnv {
 
     final Stack<VarTable> varTableStack;
+    final Stack<Integer> methodBoundary;
+    final Stack<String> scopeName;
+
+    final Map<MethodSignature, MethodBody> methodTable;
+    // this cache is used to store the method signature which is not same as those in methodTable, but can be called by implicit cast;
+    final Map<MethodSignature, MethodBody> cacheTable;
 
     public RuntimeEnv() {
         varTableStack = new Stack<>();
+        methodTable = new HashMap<>();
+        cacheTable = new HashMap<>();
+        methodBoundary = new Stack<>();
+        scopeName = new Stack<>();
     }
 
     public VarTable getCurrentVarTable() {
@@ -20,19 +31,68 @@ public class RuntimeEnv {
         return varTableStack.peek();
     }
 
+    public MethodBody getMethod(MethodSignature methodSignature) {
+        MethodBody methodBody = methodTable.get(methodSignature);
+        if (methodBody == null) {
+            methodBody = cacheTable.get(methodSignature);
+        }
+        if (methodBody == null) {
+            // try to find the method with minimum cast operhead
+            int minimumCost = Integer.MAX_VALUE;
+            int candidate = 0;
+            MethodBody method = null;
+            for (MethodSignature signature : methodTable.keySet()) {
+                int cost = methodSignature.canCall(signature);
+                if (cost >= 0 && cost < minimumCost) {
+                    minimumCost = cost;
+                    candidate = 1;
+                    method = methodTable.get(signature);
+                } else if (cost >= 0 && cost == minimumCost) {
+                    candidate++;
+                }
+            }
+            if (candidate == 1) {
+                methodBody = method;
+                cacheTable.put(methodSignature, methodBody);
+            }
+        }
+        return methodBody;
+    }
+
+    public void registerMethod(MethodSignature methodSignature, MethodBody methodBody) {
+        if (methodTable.containsKey(methodSignature)) {
+            throw new RuntimeException("Method " + methodSignature.getMethodName() + " already exists");
+        }
+        methodTable.put(methodSignature, methodBody);
+    }
+
     public void enterBlock() {
         varTableStack.push(new VarTable());
     }
 
+    public void enterFunction(String functionName) {
+        scopeName.push(functionName);
+        methodBoundary.push(varTableStack.size());
+        varTableStack.push(new VarTable());
+    }
+
     public void exitBlock() {
-        VarTable latest = varTableStack.pop();
-        PrettyOutput.print(latest);
+        varTableStack.pop();
+    }
+
+    public void exitFunction() {
+        int size = methodBoundary.pop();
+        while (varTableStack.size() > size) {
+            varTableStack.pop();
+        }
+        scopeName.pop();
     }
 
     public MiniJavaAny lookUp(String identifier) {
         Stack<VarTable> tops = new Stack<>();
         MiniJavaAny res = null;
-        while (!varTableStack.empty()) {
+        int boundary = methodBoundary.empty() ? 0 : methodBoundary.peek();
+        while (!varTableStack.empty() && varTableStack.size() > boundary) {
             // Most variables are stored on the top, so first try to look up then push pop.
             res = varTableStack.peek().getValue(identifier);
             if (res != null) {
