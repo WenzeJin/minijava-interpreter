@@ -45,7 +45,6 @@ public class TypeCast {
                 }
                 break;
         }
-        ;
 
         return res;
     }

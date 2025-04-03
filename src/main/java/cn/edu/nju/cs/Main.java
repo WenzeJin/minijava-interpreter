@@ -25,7 +25,7 @@ public class Main {
             new Interpreter().visit(pt);
         } catch (TypeError e) {
             e.exitLog();
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
         } catch (AssertionError e) {
             e.exitLog();
         } catch (ArrayOutOfBoundsError e) {

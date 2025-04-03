@@ -1,0 +1,103 @@
+
+
+// Sudoku Solver
+
+int isValid(int[][] board, int row, int col, int num) {
+    // 检查行
+    for (int i = 0; i < 9; i++) {
+        if (board[row][i] == num) {
+            return 0;
+        }
+    }
+
+    // 检查列
+    for (int i = 0; i < 9; i++) {
+        if (board[i][col] == num) {
+            return 0;
+        }
+    }
+
+    // 检查 3x3 宫格
+    int startRow = row - row % 3;
+    int startCol = col - col % 3;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (board[startRow + i][startCol + j] == num) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+int solveSudoku(int[][] board, int row, int col) {
+    // 如果已经填充完所有行，返回成功
+    if (row == 9) {
+        return 1;
+    }
+
+    // 如果当前列已经填充完，移动到下一行
+    if (col == 9) {
+        return solveSudoku(board, row + 1, 0);
+    }
+
+    // 如果当前位置已经有数字，移动到下一列
+    if (board[row][col] != 0) {
+        return solveSudoku(board, row, col + 1);
+    }
+
+    // 尝试填充数字 1 到 9
+    for (int num = 1; num <= 9; num++) {
+        if (isValid(board, row, col, num) == 1) {
+            board[row][col] = num; // 放置数字
+
+            // 递归填充下一个位置
+            if (solveSudoku(board, row, col + 1) == 1) {
+                return 1;
+            }
+
+            // 如果递归失败，回溯
+            board[row][col] = 0;
+        }
+    }
+
+    // 如果没有数字可以放置，返回失败
+    return 0;
+}
+
+// 打印数独棋盘
+void printBoard(int[][] board) {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            print(board[i][j] + " ");
+        }
+        println();
+    }
+}
+
+int main() {
+    // 定义数独棋盘（0 表示空白）
+    int[][] board = {
+        {5, 3, 0, 0, 7, 0, 0, 0, 0},
+        {6, 0, 0, 1, 9, 5, 0, 0, 0},
+        {0, 9, 8, 0, 0, 0, 0, 6, 0},
+        {8, 0, 0, 0, 6, 0, 0, 0, 3},
+        {4, 0, 0, 8, 0, 3, 0, 0, 1},
+        {7, 0, 0, 0, 2, 0, 0, 0, 6},
+        {0, 6, 0, 0, 0, 0, 2, 8, 0},
+        {0, 0, 0, 4, 1, 9, 0, 0, 5},
+        {0, 0, 0, 0, 8, 0, 0, 7, 9}
+    };
+
+    printBoard(board);
+
+    if (solveSudoku(board, 0, 0) == 1) {
+        println("Success!");
+        printBoard(board);
+    } else {
+        println("No solution!");
+    }
+
+    return 0;
+}

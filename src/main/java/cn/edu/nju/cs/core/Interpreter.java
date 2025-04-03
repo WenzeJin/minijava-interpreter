@@ -34,9 +34,8 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             throw new RuntimeException("No main method found.");
         }
         assert mainEntry instanceof CustomMethod;
-        System.out.println(env);
         MiniJavaAny ret = mainEntry.invoke(env, new MiniJavaAny[0]);
-        System.out.println("Program exits with the code " + ret.getInt() + ".");
+        System.out.println("Process exits with the code " + ret.getInt() + ".");
         return null;
     }
 

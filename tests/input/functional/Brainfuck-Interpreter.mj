@@ -1,0 +1,52 @@
+
+// This is a Brainfuck interpreter in MiniJava. It takes a string of Brainfuck code as input and executes it.
+
+void execute_brainfuck(char[] code) {
+    char[] tape = new char[30000]; 
+    int ptr = 0; 
+    int i = 0;  
+
+    while (i < length(code)) {
+        if (code[i] == '>') {
+            ptr++; 
+        } else if (code[i] == '<') {
+            ptr--; 
+        } else if (code[i] == '+') {
+            tape[ptr]++;
+        } else if (code[i] == '-') {
+            tape[ptr]--; 
+        } else if (code[i] == '.') {
+            print(tape[ptr]);
+        } else if (code[i] == ',') {
+            assert(false); // not supported
+        } else if (code[i] == '[') {
+            if (tape[ptr] == 0) {
+                int loop = 1;
+                while (loop > 0) {
+                    i++;
+                    if (code[i] == '[') loop++;
+                    if (code[i] == ']') loop--;
+                }
+            }
+        } else if (code[i] == ']') {
+            if (tape[ptr] != 0) { 
+                int loop = 1;
+                while (loop > 0) {
+                    i--;
+                    if (code[i] == ']') loop++;
+                    if (code[i] == '[') loop--;
+                }
+            }
+        }
+        i++; // next insn
+    }
+}
+
+int main() {
+    string input = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.";
+    println("Input: " + input);
+    println("Starting execution...");
+    execute_brainfuck(to_char_array(input)); 
+    println("Execution complete.");
+    return 0;
+}

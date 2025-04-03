@@ -54,8 +54,8 @@ public class CustomMethod implements MethodBody {
         
         // 4. exit scope
         // TODO: remove this
-        System.out.println("Exiting function " + methodSignature.getMethodName());
-        System.out.println(env);
+        // System.out.println("Exiting function " + methodSignature.getMethodName());
+        // System.out.println(env);
         env.exitFunction();
 
         // 5. check return type
