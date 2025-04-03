@@ -26,7 +26,7 @@ public class FunctionalProgrammingTest {
     }
 
     /**
-     * 获取 functional 目录下的所有 .mj 测试文件（转换为 List，防止流被多次消费）
+     * 获取 functional 目录下的所有 .mj 测试文件
      */
     static List<String> provideTestCases() throws IOException, URISyntaxException {
         URL resource = FunctionalProgrammingTest.class.getClassLoader().getResource(TEST_CASES_INPUT_DIR);
@@ -39,8 +39,8 @@ public class FunctionalProgrammingTest {
             return paths
                     .filter(Files::isRegularFile)
                     .filter(path -> path.toString().endsWith(".mj"))
-                    .map(path -> path.getFileName().toString())  // 只保留文件名
-                    .collect(Collectors.toList());  // 转换为 List，防止流被重复消费
+                    .map(path -> path.getFileName().toString())
+                    .collect(Collectors.toList());
         }
     }
 

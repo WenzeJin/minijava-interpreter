@@ -1,7 +1,0 @@
-int main() {
-    int[] arr = null;
-
-    println(arr[0]); // null pointer error
-
-    return 0;
-}
