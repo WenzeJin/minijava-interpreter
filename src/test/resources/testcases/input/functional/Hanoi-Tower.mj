@@ -1,0 +1,65 @@
+
+
+// Hanoi Tower
+
+void hanoi(int n, int[][] pegs, int source, int target, int auxiliary) {
+    if (n == 1) {
+        int disk = 0;
+        while (pegs[source][disk] != 0) 
+            disk++;
+        disk--;
+
+        int value = pegs[source][disk];
+        pegs[source][disk] = 0;
+        int pos = 0;
+        while (pegs[target][pos] != 0) pos++;
+        pegs[target][pos] = value;
+        println("move " + value + " from " + (char)('A' + source) + " to " + (char)('A' + target));
+        println(pegs);
+        return;
+    }
+
+    hanoi(n - 1, pegs, source, auxiliary, target);
+
+    int disk = 0;
+    while (pegs[source][disk] != 0) 
+        disk++;
+    disk--;
+
+    int value = pegs[source][disk];
+    pegs[source][disk] = 0;
+    int pos = 0;
+    while (pegs[target][pos] != 0) pos++;
+    pegs[target][pos] = value;
+
+    println("move " + value + " from " + (char)('A' + source) + " to " + (char)('A' + target));
+    println(pegs);
+
+    hanoi(n - 1, pegs, auxiliary, target, source);
+}
+
+int main() {
+    
+    int max = 4;
+    int[][] pegs = new int[3][max];
+
+    // initalize pegs
+    int n = 3;
+    for (int i = 0; i < n; i++) {
+        pegs[0][i] = n - i;
+    }
+
+    println("------------------------------------------");
+    println("Before :");
+    println(pegs);
+    println("------------------------------------------");
+
+    hanoi(n, pegs, 0, 2, 1); // 0: A, 1: B, 2: C
+
+    println("------------------------------------------");
+    println("After :");
+    println(pegs);
+    println("------------------------------------------");
+
+    return 0;
+}

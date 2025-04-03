@@ -1,0 +1,7 @@
+int main() {
+    char c = 'a';
+
+    assert(c <= 10); // assertion failed
+
+    return 0;
+}

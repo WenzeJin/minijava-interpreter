@@ -1,0 +1,9 @@
+
+
+int main() {
+    int[] arr = {'a', 'b' + 0, 123, 456, atoi("789")};
+
+    println(arr);
+
+    return 0;
+}
