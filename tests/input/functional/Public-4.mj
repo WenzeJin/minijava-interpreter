@@ -1,0 +1,15 @@
+int main() {
+    char x = 'G';
+    var res = foo(x);
+    println(res);
+
+    return 0;
+}
+
+int foo(int x) {
+    return x + 10;
+}
+
+char foo(char x) { // matched
+    return (char) (x + 1);
+}

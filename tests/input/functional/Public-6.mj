@@ -1,0 +1,9 @@
+
+
+int main() {
+    int x = 10;
+
+    char c = x; // error: cannot convert from 'int' to 'char'
+
+    return 0;
+}

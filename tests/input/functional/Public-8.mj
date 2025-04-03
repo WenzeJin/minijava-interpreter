@@ -1,0 +1,8 @@
+
+int main() {
+    string[] arr = {"hello", "world", "how", "are", itoa(123), to_string(new char[] {'a'})};
+
+    println(arr);
+
+    return 0;
+}
