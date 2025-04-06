@@ -1,6 +1,10 @@
 package cn.edu.nju.cs.core;
 
 import cn.edu.nju.cs.env.MethodSignature;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.edu.nju.cs.env.CustomMethod;
 import cn.edu.nju.cs.env.MethodBody;
 import cn.edu.nju.cs.env.RuntimeEnv;
@@ -113,10 +117,6 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             // VAR identifier '=' expression
             MiniJavaAny value = visit(ctx.expression());
             String identifier = ctx.identifier().getText();
-            if (value.isLiteral() && value.isBasicType(BasicType.CHAR)) {
-                // we will make it int when its a char literal
-                value = new MiniJavaAny(BasicType.INT, value.getInt());
-            }
             if (!env.init(identifier, value)) {
                 throw new RuntimeException("Variable " + identifier + " already exists.");
             }
@@ -126,17 +126,28 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             var variableDeclarator = ctx.variableDeclarator();
             String identifier = variableDeclarator.identifier().getText();
             if (variableDeclarator.variableInitializer() != null) {
-                // variableDeclarator '=' expression
-                MiniJavaAny value = visit(variableDeclarator.variableInitializer());
-                if (!value.getType().equals(prototype.getType())
-                        && !TypeUtils.canCastImplicit(value.getType(), prototype.getType())) {
-                    // wrong type initialization and cannot cast implicitly
-                    throw new TypeError("Variable " + identifier + " cannot be initialized with type " + value.getType()
-                            + ", expected " + prototype.getType());
-                } else if (!value.getType().equals(prototype.getType()) && TypeUtils.canCastImplicit(value.getType(), prototype.getType())) {
-                    // cast implicitly
-                    value = TypeCast.castTo(value, prototype.getType());
+                // variableDeclarator '=' xxx
+                MiniJavaAny value = null;
+                if (variableDeclarator.variableInitializer().arrayInitializer() != null) {
+                    // array initializer
+                    value = visitArrayInitializer(variableDeclarator.variableInitializer().arrayInitializer(), prototype.getType());
+                } else {
+                    // normal expression
+                    value = visitExpression(variableDeclarator.variableInitializer().expression());
+                    if (!value.getType().equals(prototype.getType())) {
+                        if (TypeUtils.canCastImplicit(value.getType(), prototype.getType())) {
+                            // cast implicitly
+                            value = TypeCast.castTo(value, prototype.getType());
+                        } else if (TypeUtils.canCastIntToChar(value) && prototype.getType().equals("char")) {
+                            // char literal
+                            value = new MiniJavaAny(BasicType.INT, value.getInt());
+                        } else {
+                            throw new TypeError("Variable " + identifier + " cannot be initialized with type " + value.getType()
+                                    + ", expected " + prototype.getType());
+                        }
+                    }
                 }
+                
                 if (!env.init(identifier, value)) {
                     throw new RuntimeException("Variable " + identifier + " already exists.");
                 }
@@ -406,12 +417,17 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
                         throw new RuntimeException("Left value of = must be a variable.");
                     } else if (lv.getType().equals(rv.getType())) {
                         lv.assign(rv);
+                        return lv.clone();
                     } else if (TypeUtils.canCastImplicit(rv.getType(), lv.getType())) {
                         // cast implicitly
                         rv = TypeCast.castTo(rv, lv.getType());
                         lv.assign(rv);
                         return lv.clone();
-                    } else {
+                    } else if (TypeUtils.canCastIntToChar(rv) && lv.getType().equals("char")) {
+                        // int literal in char range
+                        lv.assign(rv);
+                        return lv.clone();
+                    } else { 
                         throw new TypeError("Cannot assign " + rv.getType() + " to " + lv.getType());
                     }
                 case "*":
@@ -519,6 +535,34 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             }
         } else if (ctx.methodCall() != null) {
             return visitMethodCall(ctx.methodCall());
+        } else if (ctx.NEW() != null) {
+            // new creator
+            return visitCreator(ctx.creator());
+        } else if (ctx.LBRACK() != null) {
+            // array access
+            MiniJavaAny array = visit(ctx.expression(0));
+            TypeUtils.assertArray(array);
+            MiniJavaAny index = visit(ctx.expression(1));
+            TypeUtils.assertNumber(index);
+            if (array.getValue() == null) {
+                throw new NullPointerError("Array is null.");
+            }
+            Object arrayValue = array.getValue();
+            if (!(arrayValue instanceof List<?>)) {
+                throw new RuntimeException("Expected an array of MiniJavaAny, but got: " + arrayValue.getClass().getName());
+            }
+            @SuppressWarnings("unchecked")
+            List<MiniJavaAny> values = (List<MiniJavaAny>) arrayValue;
+            if (index.getInt() < 0 || index.getInt() >= values.size()) {
+                throw new ArrayOutOfBoundsError("Array index out of bounds: " + index.getInt());
+            }
+            MiniJavaAny value = values.get(index.getInt());
+            assert value != null : "Null element in an array";
+            value.setVariable();
+            return value;
+        } else if (ctx.LPAREN() != null) {
+            // type cast
+            return visit(ctx.typeType());
         } else {
             throw new RuntimeException("Unknown expression.");
         }
@@ -536,20 +580,11 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         }
     }
 
-    private boolean inCharRange(int val) {
-        return Byte.MIN_VALUE <= val && val <= Byte.MAX_VALUE;
-    }
-
     @Override
     public MiniJavaAny visitLiteral(MiniJavaParser.LiteralContext ctx) {
         MiniJavaAny value = null;
         if (ctx.DECIMAL_LITERAL() != null) {
-            int val = Integer.parseInt(ctx.getText());
-            if (inCharRange(val)) {
-                value = new MiniJavaAny(BasicType.CHAR, (byte) Integer.parseInt(ctx.getText()));
-            } else {
-                value = new MiniJavaAny(BasicType.INT, Integer.parseInt(ctx.getText()));
-            }
+            value = new MiniJavaAny(BasicType.INT, Integer.parseInt(ctx.getText()));
         } else if (ctx.CHAR_LITERAL() != null) {
             value = new MiniJavaAny(BasicType.CHAR, (byte)ctx.getText().charAt(1));
         } else if (ctx.STRING_LITERAL() != null) {
@@ -583,6 +618,108 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
     public MiniJavaAny visitTypeType(MiniJavaParser.TypeTypeContext ctx) {
         return new MiniJavaAny(ctx.getText(), null);
     }
+    
+    @Override
+    public MiniJavaAny visitCreator(MiniJavaParser.CreatorContext ctx) {
+        /*
+         * creator: createdName arrayCreatorRest
+         */
 
+        String basicType = ctx.createdName().getText();
+        var rest = ctx.arrayCreatorRest();
+        if (rest.arrayInitializer() != null) {
+            // rest: ('[' ']')+ arrayInitializer
+            // count the number of dimensions
+            int dim = rest.LBRACK().size();
+            StringBuilder type = new StringBuilder(basicType);
+            for (int i = 0; i < dim; i++) {
+                type.append("[]");
+            }
+            // visit array initializer
+            return visitArrayInitializer(rest.arrayInitializer(), type.toString());
+        } else if (rest.expression() != null) {
+            // rest: ('[' expression ']')+ ('[' ']')*
+            // count the number of dimensions
+            int dim = rest.LBRACK().size();
+            int[] elements = new int[dim];
+            for (int i = 0; i < dim; i++) {
+                elements[i] = -1;
+            }
+            int expressionCount = rest.expression().size();
+            for (int i = 0; i < expressionCount; i++) {
+                MiniJavaAny value = visit(rest.expression(i));
+                TypeUtils.assertNumber(value);
+                elements[i] = value.getInt();
+            }
+            return defaultArrayInitializer(basicType, elements, 0);            
+        }
 
+        return null;
+    }
+    
+    public MiniJavaAny visitArrayInitializer(MiniJavaParser.ArrayInitializerContext ctx, String requiredType) {
+        /*
+         * arrayInitializer: '{' (variableInitializer (',' variableInitializer)* ','?)? '}'
+         */
+
+        if (!requiredType.endsWith("[]")) {
+            throw new TypeError("Array initializer requires array type.");
+        }
+        String elementType = requiredType.substring(0, requiredType.length() - 2);
+        List<MiniJavaAny> values = new ArrayList<>();
+        for (var initializer : ctx.variableInitializer()) {
+            if (initializer.expression() != null) {
+                // normal expression
+                MiniJavaAny value = visit(initializer.expression());
+                if (!value.getType().equals(elementType)) {
+                    if (TypeUtils.canCastImplicit(value.getType(), elementType)) {
+                        // cast implicitly
+                        value = TypeCast.castTo(value, elementType);
+                    } else if (TypeUtils.canCastIntToChar(value) && elementType.equals("char")) {
+                        // char literal
+                        value = new MiniJavaAny(BasicType.CHAR, value.getChar());
+                    } else {
+                        throw new TypeError(
+                                "Array initializer requires " + elementType + ", but got " + value.getType() + ".");
+                    }
+                }
+                values.add(new MiniJavaAny(value));
+            } else {
+                // array initializer
+                values.add(visitArrayInitializer(initializer.arrayInitializer(), elementType));
+            }
+        }
+        return new MiniJavaAny(requiredType, values);
+    }
+
+    public MiniJavaAny defaultArrayInitializer(String basicType, int[] elements, int currdim) {
+        if (currdim == elements.length) {
+            // create basic type
+            var basic = new MiniJavaAny(basicType, null);
+            if (basic.isBasicType()) {
+                basic.initializeDefaultValue();
+                return basic;
+            } else {
+                throw new TypeError("Cannot create array of basic type " + basicType);
+            }
+        } else {
+            // create array
+            List<MiniJavaAny> values = new ArrayList<>();
+            StringBuilder type = new StringBuilder(basicType);
+            for (int i = 0; i < elements.length - currdim; i++) {
+                type.append("[]");
+            }
+            String typeName = type.toString();
+            if (elements[currdim] < 0) {
+                var value = new MiniJavaAny(typeName, null);
+                value.initializeDefaultValue();
+                return value;
+            } else {
+                for (int i = 0; i < elements[currdim]; i++) {
+                    values.add(defaultArrayInitializer(basicType, elements, currdim + 1));
+                }
+            }
+            return new MiniJavaAny(type.toString(), values);
+        }
+    }
 }

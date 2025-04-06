@@ -1,6 +1,6 @@
 # MiniJava Interpreter
 
-[![Java CI with Maven](https://github.com/WenzeJin/minijava-interpreter/actions/workflows/maven.yml/badge.svg)](https://github.com/WenzeJin/minijava-interpreter/actions/workflows/maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build & Test](https://github.com/WenzeJin/minijava-interpreter/actions/workflows/maven.yml/badge.svg)](https://github.com/WenzeJin/minijava-interpreter/actions/workflows/maven.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This is a simple interpreter for the MiniJava language, written in Java. This project is also a part of the course _Compiler & Virtual Machines_ of Nanjing University.
 

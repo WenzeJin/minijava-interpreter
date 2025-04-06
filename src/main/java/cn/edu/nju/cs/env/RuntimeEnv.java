@@ -153,8 +153,9 @@ public class RuntimeEnv {
     }
 
     public boolean init(String identifier, MiniJavaAny value) {
-        value.setVariable();
-        return varTableStack.peek().init(identifier, value);
+        MiniJavaAny valueInsert = new MiniJavaAny(value);
+        valueInsert.setVariable();
+        return varTableStack.peek().init(identifier, valueInsert);
     }
 
 

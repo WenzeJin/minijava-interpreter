@@ -1,0 +1,11 @@
+int main() {
+    int[] arr = {1, 2, 3};
+    println(arr);
+    arr[1] = 4;
+    println(arr);
+    int[][] arr2 = {null, null};
+    arr2[1] = new int[3];
+    arr2[0] = new int[] {1, 2, 3, 4};
+    println(arr2);
+    return 0;
+}

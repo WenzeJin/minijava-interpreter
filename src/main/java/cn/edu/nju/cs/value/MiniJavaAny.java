@@ -1,5 +1,6 @@
 package cn.edu.nju.cs.value;
 
+import java.util.List;
 
 public class MiniJavaAny implements Cloneable {
 
@@ -72,12 +73,36 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public String getString() {
-        if (type.equals("string")) {
+        if (value == null) {
+            return "null";
+        } else if (type.equals("string")) {
             return (String) value;
         } else if (type.equals("char")) {
             return String.valueOf((char) (byte) value);
+        } else if (type.equals("int")) {
+            return String.valueOf((int) value);
+        } else if (type.equals("boolean")) {
+            return String.valueOf((boolean) value);
+        } else if (type.equals("null")) {
+            return "null";
+        } else if (type.endsWith("[]")) {
+            assert value instanceof List;
+            StringBuilder sb = new StringBuilder();
+            sb.append("[");
+            for (Object obj : (List<?>) value) {
+                if (obj instanceof MiniJavaAny) {
+                    sb.append(((MiniJavaAny) obj).getString()).append(", ");
+                } else {
+                    assert false : "Invalid type in array: " + obj.getClass();
+                }
+            }
+            if (sb.length() > 1) {
+                sb.setLength(sb.length() - 2); // Remove last comma and space
+            }
+            sb.append("]");
+            return sb.toString();
         } else {
-            return String.valueOf(value);
+            throw new RuntimeException("Cannot convert " + value + " to string.");
         }
     }
 
@@ -85,6 +110,15 @@ public class MiniJavaAny implements Cloneable {
 
     public boolean isBasicType(BasicType type) {
         return this.type.equals(type.toString().toLowerCase());
+    }
+
+    public boolean isBasicType() {
+        return isBasicType(BasicType.INT) || isBasicType(BasicType.CHAR) || isBasicType(BasicType.BOOLEAN)
+                || isBasicType(BasicType.STRING);
+    }
+
+    public boolean isArray() {
+        return type.endsWith("[]");
     }
 
     public boolean isNumber() {
@@ -115,28 +149,21 @@ public class MiniJavaAny implements Cloneable {
     }
 
     public void setValue(Object value) {
-        if (value.getClass() != this.value.getClass()) {
+        if (this.value != null && value != null && value.getClass() != this.value.getClass()) {
             throw new RuntimeException("Cannot assign value of different type.");
         }
         this.value = value;
     }
 
-    public void setIntVal(int value) {
-        if (type.equals("int")) {
-            this.value = value;
-        } else if (type.equals("char")) {
-            this.value = (byte) value;
-        }
-    }
-
     public void assign(MiniJavaAny other) {
         if (other.type.equals("string") && other.type.equals("string")) {
-            value = other.value;
+            value = other.getString();
         } else if (other.type.equals("boolean") && this.type.equals("boolean")) {
-            value = other.value;
-        } else if ((other.type.equals("int") || other.type.equals("char"))
-                && (type.equals("int")|| type.equals("char"))) {
-            setIntVal(other.getInt());
+            value = other.getBoolean();
+        } else if ((other.type.equals("int") || other.type.equals("char")) && type.equals("int")) {
+            value = other.getInt();
+        } else if ((other.type.equals("int") || other.type.equals("char")) && type.equals("char")) {
+            value = other.getChar();
         } else {
             setValue(other.getValue());
         }

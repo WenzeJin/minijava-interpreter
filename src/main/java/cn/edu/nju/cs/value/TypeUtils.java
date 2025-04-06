@@ -68,6 +68,20 @@ public class TypeUtils {
         }
     }
 
+    public static void assertArray(MiniJavaAny value) {
+        if (!value.isArray()) {
+            throw new TypeError("Type mismatch. Requires array, but got " + value.getType() + ".");
+        }
+    }
+
+    private static boolean inCharRange(int value) {
+        return Byte.MIN_VALUE <= value && value <= Byte.MAX_VALUE;
+    }
+
+    public static boolean canCastIntToChar(MiniJavaAny value) {
+        return value.isBasicType(MiniJavaAny.BasicType.INT) && inCharRange(value.getInt()) && value.isLiteral();
+    }
+
     public static boolean canCastImplicit(String from, String to) {
         if (from.equals(to)) {
             return true;
