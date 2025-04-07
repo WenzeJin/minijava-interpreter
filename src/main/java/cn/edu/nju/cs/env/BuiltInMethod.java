@@ -56,6 +56,7 @@ public class BuiltInMethod implements MethodBody {
         }
         // invoke the function
         env.enterFunction(function.getClass().getSimpleName());
+        env.useNewScope();
         MiniJavaAny result = function.apply(env, parameters);
         env.exitFunction();
         return result;

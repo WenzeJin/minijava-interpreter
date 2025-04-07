@@ -1,0 +1,12 @@
+int main() {
+    char[][] arr = {null, null, null, null, null, null, null, null, null};
+    string[] strs = {"123", "456", "789"};
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            string concat = strs[i] + strs[j];
+            arr[i + 3 * j] = to_char_array(concat);
+        }
+    }
+    println(arr);
+    return 0;
+}

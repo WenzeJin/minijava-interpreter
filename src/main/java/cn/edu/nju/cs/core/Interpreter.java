@@ -89,6 +89,7 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         } else {
             env.useNewScope();
         }
+        
         MiniJavaAny ret = null;
         try {
             ret = visitChildren(ctx);
