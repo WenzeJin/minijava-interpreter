@@ -1,0 +1,5 @@
+int main() {
+    int[] arr = {5, 4, 3, 2, 1};
+    int n = arr[6]; // This should exited with code 34
+    return 0;
+}

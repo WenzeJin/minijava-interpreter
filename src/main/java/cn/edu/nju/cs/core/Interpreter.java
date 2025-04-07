@@ -89,9 +89,15 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
         } else {
             env.useNewScope();
         }
-        var ret = visitChildren(ctx);
-        if (newScope) {
-            env.exitBlock();
+        MiniJavaAny ret = null;
+        try {
+            ret = visitChildren(ctx);
+        } catch (RuntimeException e) {
+            throw e;
+        } finally {
+            if (newScope) {
+                env.exitBlock();
+            }
         }
         return ret;
     }
@@ -206,10 +212,11 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             MiniJavaAny condition = visit(ctx.parExpression().expression());
             TypeUtils.isBasicType(condition, BasicType.BOOLEAN);
             if (condition.getBoolean()) {
-                return visit(ctx.statement(0));
+                visit(ctx.statement(0));
             } else if (ctx.ELSE() != null) {
-                return visit(ctx.statement(1));
+                visit(ctx.statement(1));
             }
+            return null;
         }
 
         // deal with WHILE
@@ -228,8 +235,12 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
                 } catch (Break e) {
                     // break
                     break;
+                } catch (Return e) {
+                    // return
+                    throw e;
                 }
             }
+            return null;
         }
 
         // deal with FOR
@@ -242,6 +253,7 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             var forInit = ctx.forControl().forInit();
             var expression = ctx.forControl().expression();
             var forUpdate = ctx.forControl().forUpdate;
+            env.enterBlock();
             if (forInit != null) {
                 visitChildren(forInit);
             }
@@ -260,11 +272,18 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
                 } catch (Break e) {
                     // break
                     break;
+                } catch (Return e) {
+                    // return
+                    env.exitBlock();
+                    throw e;
                 }
                 if (forUpdate != null) {
                     visit(forUpdate);
                 }
             }
+            env.exitBlock();
+
+            return null;
         }
 
         // deal with RETURN
@@ -330,7 +349,7 @@ public class Interpreter extends MiniJavaParserBaseVisitor<MiniJavaAny> {
             if (!value.isVariable()) {
                 throw new RuntimeException("Postfix operation must be applied to a variable.");
             }
-            TypeUtils.isBasicType(value, BasicType.INT);
+            TypeUtils.assertNumber(value);
             MiniJavaAny oldValue = value.clone();
             if (ctx.postfix.getText().equals("++")) {
                 value.increment();

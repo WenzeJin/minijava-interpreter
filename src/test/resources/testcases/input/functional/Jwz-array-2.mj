@@ -1,0 +1,5 @@
+int main() {
+    string[] arr = null;
+    println(arr[0]); // This should exited with code 34
+    return 0;
+}

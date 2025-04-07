@@ -16,7 +16,15 @@ public class TypeCast {
         MiniJavaAny res = null;
         if (type.equals("void")) {
             // void means any type so we don't need to do anything
-            return src;
+            return new MiniJavaAny(src);
+        }
+        if (type.equals("[]")) {
+            // [] means array type
+            if (src.isArray()) {
+                return new MiniJavaAny(src);
+            } else {
+                throw new TypeError("Cannot cast " + src.getType() + " to array type.");
+            }
         }
         switch (src.getType()) {
             case "int":

@@ -1,4 +1,7 @@
 [1, 2, 3]
 [1, 4, 3]
 [[1, 2, 3, 4], [0, 0, 0]]
+true
+false
+[2, 2, 3]
 Process exits with the code 0.

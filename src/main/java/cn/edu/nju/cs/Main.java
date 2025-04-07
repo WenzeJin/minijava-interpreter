@@ -25,7 +25,8 @@ public class Main {
             new Interpreter().visit(pt);
         } catch (TypeError e) {
             e.exitLog();
-            System.out.println(e.getMessage());
+            //System.err.println(e.getMessage());
+            //e.printStackTrace();
         } catch (AssertionError e) {
             e.exitLog();
         } catch (ArrayOutOfBoundsError e) {
@@ -34,7 +35,8 @@ public class Main {
             e.exitLog();
         } catch (Exception e) {
             System.out.println("Process exits with exception.");
-            e.printStackTrace();
+            //System.err.println("Exception: " + e.getMessage());
+            //e.printStackTrace();
         }
         
     }

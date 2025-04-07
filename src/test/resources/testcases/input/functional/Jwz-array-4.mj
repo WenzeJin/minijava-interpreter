@@ -1,0 +1,18 @@
+int main() {
+    int[] arr1 = {1,2,3}; 
+    println(arr1); // output : [1, 2, 3]
+    int[][] arr2 = {{1,2},{3,4}}; 
+    println(arr2); // output : [[1, 2], [3, 4]]
+    int[] arr3 = null; 
+    println(arr3); // output : null
+    char[] arr4 = {'1', '2', '3'}; 
+    println(arr4); // output : [1, 2, 3] 
+    string[] arr5 = {"1", "2", "3"}; 
+    println(arr5); // output : [1, 2, 3]
+    char[] cArr = {'1', '2' ,'3'}; 
+    string str = to_string(cArr); // 123
+    char[] cArr1 = null; 
+    string str1 = to_string(cArr1); // null pointer error
+
+    return 0;
+}

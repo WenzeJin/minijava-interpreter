@@ -1,0 +1,11 @@
+int func(int a, int b) {
+    return a + b + x;
+}
+
+int main() {
+    int x = 10;
+    int y = 20;
+    int z = func(x, y);
+    println(z);
+    return 0;
+}

@@ -38,7 +38,7 @@ public class CustomMethod implements MethodBody {
             String parameterName = parameterNames[i];
             String parameterType = parameterTypes[i];
             MiniJavaAny arg = args[i];
-            if (arg.getType() != parameterType) {
+            if (!arg.getType().equals(parameterType)) {
                 arg = TypeCast.castTo(arg, parameterType);
             }
             env.init(parameterName, arg);

@@ -7,7 +7,7 @@ public class ArrayOutOfBoundsError extends RuntimeException {
     }
 
     public void exitLog() {
-        System.out.println("Process exits with the code 35.");
+        System.out.println("Process exits with the code 34.");
     }
 
     @Override

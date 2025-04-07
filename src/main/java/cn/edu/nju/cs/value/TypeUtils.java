@@ -102,6 +102,10 @@ public class TypeUtils {
             // void means any type
             return true;
         }
+        if (to.equals("[]") && from.endsWith("[]")) {
+            // [] means array type
+            return true;
+        }
         return false;
     }
 }

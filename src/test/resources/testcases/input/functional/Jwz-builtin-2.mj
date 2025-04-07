@@ -1,0 +1,19 @@
+int main() {
+    string str = "123456";
+    println(str);
+    char[] arr = to_char_array(str);
+    println(arr);
+    int n = atoi(str);
+    println(n);
+    string str2 = to_string(arr);
+    println(str2);
+    string str3 = itoa(n);
+    println(str3);
+    char[] arr3 = to_char_array(str3);
+
+    for (int i = 0; i < length(str) and i < length(str3); i++) {
+        assert(arr[i] == arr3[i]);
+    }
+    println("All assertions passed");
+    return 0;
+}
