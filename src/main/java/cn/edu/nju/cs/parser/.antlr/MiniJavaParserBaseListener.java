@@ -1,5 +1,4 @@
-// Generated from MiniJavaParser.g4 by ANTLR 4.13.2
-package cn.edu.nju.cs.parser;
+// Generated from /Users/jinwenze/Coding/2025/Interpreter&VM/minijava-interpreter/src/main/java/cn/edu/nju/cs/parser/MiniJavaParser.g4 by ANTLR 4.13.1
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;

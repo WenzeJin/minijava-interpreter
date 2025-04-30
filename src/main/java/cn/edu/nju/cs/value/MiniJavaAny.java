@@ -1,6 +1,8 @@
 package cn.edu.nju.cs.value;
 
+import java.util.HashMap;
 import java.util.List;
+import cn.edu.nju.cs.env.ClassDeclaration;
 
 public class MiniJavaAny implements Cloneable {
 
@@ -8,7 +10,15 @@ public class MiniJavaAny implements Cloneable {
         INT, CHAR, BOOLEAN, STRING, NULL
     }
 
+    /*
+     If the type is a class, then the `type` is the declared type, and `classType` is the real type.
+     The `value` will store a hash map of the class fields.
+     If the type is a basic type, then the `type` is the basic type, and `value` will store the value.
+     If the type is an array, then the `type` is the array type, and `value` will store a list of the array elements.
+     */
     String type;
+    ClassDeclaration classType;
+
     Object value;
     boolean isVariable;
     boolean isLiteral;
@@ -16,6 +26,14 @@ public class MiniJavaAny implements Cloneable {
     public MiniJavaAny(String type, Object value) {
         this.type = type;
         this.value = value;
+        this.isVariable = false;
+        this.isLiteral = false;
+    }
+
+    public MiniJavaAny(ClassDeclaration classType) {
+        this.type = classType.getClassName();
+        this.classType = classType;
+        this.value = null;
         this.isVariable = false;
         this.isLiteral = false;
     }

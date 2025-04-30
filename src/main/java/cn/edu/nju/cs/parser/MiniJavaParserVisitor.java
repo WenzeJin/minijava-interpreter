@@ -17,6 +17,42 @@ public interface MiniJavaParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCompilationUnit(MiniJavaParser.CompilationUnitContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#classDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassDeclaration(MiniJavaParser.ClassDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#parentClassDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParentClassDeclaration(MiniJavaParser.ParentClassDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#classBody}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassBody(MiniJavaParser.ClassBodyContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#classBodyDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassBodyDeclaration(MiniJavaParser.ClassBodyDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#fieldDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitFieldDeclaration(MiniJavaParser.FieldDeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#constructorDeclaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConstructorDeclaration(MiniJavaParser.ConstructorDeclarationContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link MiniJavaParser#methodDeclaration}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -148,6 +184,12 @@ public interface MiniJavaParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitCreatedName(MiniJavaParser.CreatedNameContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link MiniJavaParser#classCreatorRest}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitClassCreatorRest(MiniJavaParser.ClassCreatorRestContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link MiniJavaParser#arrayCreatorRest}.
 	 * @param ctx the parse tree

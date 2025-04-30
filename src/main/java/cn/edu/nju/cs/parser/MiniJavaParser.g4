@@ -35,7 +35,32 @@ options {
     tokenVocab = MiniJavaLexer;
 }
 
-compilationUnit : methodDeclaration* EOF;
+compilationUnit : (classDeclaration | methodDeclaration | ';')* EOF;
+
+classDeclaration
+    : CLASS identifier parentClassDeclaration? classBody
+    ;
+
+parentClassDeclaration : EXTENDS identifier;
+
+classBody
+    : '{' classBodyDeclaration* '}'
+    ;
+
+classBodyDeclaration
+    : ';'
+    | methodDeclaration
+    | fieldDeclaration
+    | constructorDeclaration
+    ;
+
+fieldDeclaration
+    : typeType variableDeclarator ';'
+    ;
+
+constructorDeclaration
+    : identifier formalParameters constructorBody = block
+    ;
 
 methodDeclaration
     : (typeType | VOID) identifier formalParameters methodBody = block
@@ -140,6 +165,11 @@ expressionList
 expression
     : primary
     | expression '[' expression ']'
+    | expression bop = '.' (
+        identifier
+        | methodCall
+    )
+    | expression INSTANCEOF typeType
     | methodCall
     | expression postfix = ('++' | '--')
     | prefix = ('+' | '-' | '++' | '--' | '~' | 'not') expression
@@ -161,18 +191,24 @@ expression
     ) expression
     ;
 
-primary : '(' expression ')' | literal | identifier ;
+primary : '(' expression ')' | THIS | SUPER | literal | identifier ;
 
 methodCall
-    : identifier arguments
+    : (identifier | THIS | SUPER) arguments
     ;
 
 creator
-    : createdName arrayCreatorRest
+    : createdName classCreatorRest
+    | createdName arrayCreatorRest
     ;
 
 createdName
-    : primitiveType
+    : identifier
+    | primitiveType
+    ;
+
+classCreatorRest
+    : '(' expressionList? ')'
     ;
 
 arrayCreatorRest
@@ -181,7 +217,7 @@ arrayCreatorRest
     ;
 
 typeType
-    : primitiveType ('[' ']')*
+    : (identifier | primitiveType) ('[' ']')*
     ;
 
 primitiveType
